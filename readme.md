@@ -1,8 +1,23 @@
 # SQL Server Basics Tutorial
 
+![](./SQL%20Tutorial%20Cover.png)
+
 Welcome to the SQL Server Basics Tutorial! This repository aims to help beginners learn fundamental concepts of SQL using Microsoft SQL Server. Whether you're new to databases or want to refresh your knowledge, this tutorial will guide you through the essentials.
 
 ## Getting Started
+
+To get started with this tutorial, explore this [notebook](/SQL%20Notebook1.ipynb) which introduces you to SQL and also shows how you can download the SQL Server and the SQL Server Management Studio.
+
+Here's a table showing the progression of the SQL Server tutorial.
+
+| Notebook Name                  | Description                                        | Link                                            |
+|--------------------------------|----------------------------------------------------|-------------------------------------------------|
+| Introduction to SQL            | Introduction to SQL queries and basic concepts    | [Notebook](/SQL%20Notebook1.ipynb) |
+| SQL Data Definition (ALTER command)          | Learn how to to use the ALTER command to make changes to the structure of the database in SQL               | [Notebook](/DDL_ALTER.ipynb) |
+| SQL Data Manipulation          | Explore the basics of data manipulation with SQL            | [Notebook](/DML.ipynb)   |
+| SQL Data Querying    | Explore all basic commands and concepts in querying databases         | [Notebook](/DQL.ipynb) |
+
+
 
 ### Prerequisites
 

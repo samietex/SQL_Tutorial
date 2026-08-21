@@ -2,22 +2,20 @@
 
 ![](./SQL%20Tutorial%20Cover.png)
 
-Welcome to the SQL Server Basics Tutorial! This repository aims to help beginners learn fundamental concepts of SQL using Microsoft SQL Server. Whether you're new to databases or want to refresh your knowledge, this tutorial will guide you through the essentials.
+This is for people new to databases, or who know a little SQL and want a solid grounding in SQL Server specifically. Work through the notebooks in order and by the end you'll be able to query, filter, join, and aggregate data with T-SQL, and manage database structure with DDL and DML statements.
 
 ## Getting Started
 
-To get started with this tutorial, explore this [notebook](/SQL%20Notebook1.ipynb) which introduces you to SQL and also shows how you can download the SQL Server and the SQL Server Management Studio.
+To get started, work through this [notebook](/SQL%20Notebook1.ipynb). It introduces SQL and covers downloading SQL Server and SQL Server Management Studio.
 
-Here's a table showing the progression of the SQL Server tutorial.
+Work through the notebooks in this order:
 
 | Notebook Name                  | Description                                        | Link                                            |
 |--------------------------------|----------------------------------------------------|-------------------------------------------------|
 | Introduction to SQL            | Introduction to SQL queries and basic concepts    | [Notebook](/SQL%20Notebook1.ipynb) |
-| SQL Data Definition (ALTER command)          | Learn how to to use the ALTER command to make changes to the structure of the database in SQL               | [Notebook](/DDL_ALTER.ipynb) |
-| SQL Data Manipulation          | Explore the basics of data manipulation with SQL            | [Notebook](/DML.ipynb)   |
-| SQL Data Querying    | Explore all basic commands and concepts in querying databases         | [Notebook](/DQL.ipynb) |
-
-
+| SQL Data Definition (ALTER command)          | Use the ALTER command to change the structure of a database          | [Notebook](/DDL_ALTER.ipynb) |
+| SQL Data Manipulation          | The basics of data manipulation with SQL            | [Notebook](/DML.ipynb)   |
+| SQL Data Querying    | All the basic commands and concepts for querying databases         | [Notebook](/DQL.ipynb) |
 
 ### Prerequisites
 
@@ -54,25 +52,13 @@ Here's a table showing the progression of the SQL Server tutorial.
 
 ## Contributing
 
-We welcome contributions! If you'd like to improve existing content or add new tutorials, follow these steps:
+Contributions are welcome. If you'd like to improve existing content or add new tutorials:
 
 1. Fork this repository.
 2. Create a new branch for your changes.
 3. Make your modifications (add or edit Markdown files).
 4. Submit a pull request.
 
-We'll review your changes promptly.
-
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
-
----
-
-Feel free to enhance this README with additional sections, diagrams, or examples. Happy learning! 🚀📚
-
----
-
-**References:**
-1. SQL Server Tutorials
-2. Markdown Cheatsheet

@@ -6,12 +6,40 @@ A hands-on companion to the *All About Data & More* SQL curriculum. This is for 
 
 ## Getting Started
 
-Start with [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>). It covers prerequisites, setup, and the full course agenda.
+**Already comfortable with git, VS Code, and SQL Server?** Clone the repo, open it in VS Code with the mssql extension installed, restore AdventureWorks2022, and start with [`01 - SQL Basics`](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>). Everything below is for anyone who isn't, worth a read even if you're experienced, since it's specific to this repo, not a generic git tutorial. The full version of this lives in [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>), read that first if you're new here.
 
-### Prerequisites
+### What you're actually looking at
 
-- **SQL Server**: install the free [SQL Server Express Edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) to follow along.
-- **SQL Server Management Studio (SSMS)**: the client used to connect to your local server and run these notebooks' queries.
+Every file ending in `.ipynb` is a Jupyter notebook: a document that mixes explanation with actual SQL code you can run one step at a time and see the real result underneath it. That's the whole point of this repo, you don't just read about `SELECT`, you run it yourself.
+
+### Reading vs. running
+
+Viewing this on github.com shows you a **preview**. GitHub can display a notebook's text and whatever results were already saved in it, but it can't execute anything, there's no database behind the page. To actually run a query, you need to open the notebook somewhere connected to a real SQL Server, on your own computer.
+
+### 1. Get the code onto your computer
+
+```
+git clone https://github.com/samietex/SQL_Tutorial.git
+```
+Never used git? Click the green **Code** button on this page, then **Download ZIP**, and unzip it somewhere on your computer.
+
+### 2. Install SQL Server and load the practice data
+
+- Install [SQL Server Express Edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads), it's free.
+- Install [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms), the tool you'll use to load the sample database below.
+- Download and restore the **AdventureWorks2022** sample database, most of these notebooks query it, and it doesn't come with SQL Server automatically. Official instructions: [Install and configure AdventureWorks](https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure). You want the OLTP `.bak` file, restored as `AdventureWorks2022`.
+
+### 3. Install a tool that can actually run the notebooks
+
+These notebooks use a SQL kernel, they need an app that can connect a `.ipynb` file to a real SQL Server and run its cells.
+
+- Install [Visual Studio Code](https://code.visualstudio.com/), it's free.
+- Inside VS Code, install the **SQL Server (mssql)** extension by Microsoft.
+- Open this repo's folder in VS Code, then open a notebook.
+- The first time you run a cell, VS Code asks you to pick a kernel, choose the SQL kernel and connect it to your local SQL Server instance.
+- Run a cell with `Shift+Enter`. A cell that queries data shows its result as a table right underneath it, a real result from your own database.
+
+Azure Data Studio works too, it has the same SQL Notebooks feature built in.
 
 ## Course Agenda
 

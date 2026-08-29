@@ -1,0 +1,15 @@
+---
+title: What ALTER TABLE Can Do to an Existing Table
+---
+flowchart TB
+    start(["📋 Employees Table"])
+    start -->|"➕ ADD COLUMN"| add(["New column added"])
+    start -->|"➖ DROP COLUMN"| drop(["Column removed"])
+    start -->|"✏️ ALTER COLUMN"| mod(["Column type changed"])
+    start -->|"🔒 ADD CONSTRAINT"| con(["Rule enforced on the table"])
+
+    style start fill:#f0f9ff,stroke:#0891b2,stroke-width:1.5px,color:#0c4a6e
+    style add fill:#dcfce7,stroke:#22c55e,stroke-width:1.5px,color:#14532d
+    style drop fill:#fee2e2,stroke:#ef4444,stroke-width:1.5px,color:#7f1d1d
+    style mod fill:#fef9c3,stroke:#eab308,stroke-width:1.5px,color:#713f12
+    style con fill:#f0f9ff,stroke:#0891b2,stroke-width:1.5px,color:#0c4a6e

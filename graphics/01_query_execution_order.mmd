@@ -1,0 +1,25 @@
+---
+title: The Order You Write a Query vs. The Order It Actually Runs
+---
+flowchart TB
+    subgraph write [" ✍️ How You Write It "]
+        direction TB
+        w1(["SELECT Name"]) --> w2(["FROM Person.ContactType"]) --> w3(["WHERE ContactTypeID > 5"]) --> w4(["ORDER BY Name ASC"])
+    end
+
+    subgraph run [" ⚙️ How SQL Server Actually Runs It "]
+        direction TB
+        r1(["FROM Person.ContactType"]) --> r2(["WHERE ContactTypeID > 5"]) --> r3(["SELECT Name"]) --> r4(["ORDER BY Name ASC"])
+    end
+
+    style write fill:#fffbeb,stroke:#eab308,stroke-width:1.5px,color:#713f12
+    style run fill:#f0fdf4,stroke:#22c55e,stroke-width:1.5px,color:#14532d
+
+    classDef writeNode fill:#fef9c3,stroke:#eab308,color:#713f12
+    classDef runNode fill:#dcfce7,stroke:#22c55e,color:#14532d
+
+    class w1,w2,w3,w4 writeNode
+    class r1,r2,r3,r4 runNode
+
+    linkStyle 0,1,2 stroke:#eab308,stroke-width:2px
+    linkStyle 3,4,5 stroke:#22c55e,stroke-width:2px

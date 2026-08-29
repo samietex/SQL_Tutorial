@@ -20,16 +20,16 @@ Start with [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>). It cove
 | 1 | Newsletter Only | What is a Database, and Why SQL (conceptual, no notebook, see the newsletter) |
 | 2 | Hands-On | [01 - SQL Basics (SELECT, WHERE, ORDER BY)](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>) |
 | 3 | Hands-On | [02 - Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)](<02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb>) |
-| 4 | Coming Soon | JOINs (INNER vs LEFT), and why grain matters |
-| 5 | Coming Soon | Subqueries to CTEs |
-| 6 | Coming Soon | Window Functions, Part 1 |
+| 4 | Hands-On | [03 - JOINs (INNER vs LEFT)](<03 - JOINs (INNER vs LEFT).ipynb>) |
+| 5 | Hands-On | [04 - Subqueries to CTEs](<04 - Subqueries to CTEs.ipynb>) |
+| 6 | Hands-On | [05 - Window Functions, Part 1](<05 - Window Functions, Part 1.ipynb>) |
 | 7 | Coming Soon | Window Functions, Part 2 |
 | 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>) |
 | 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>) |
 | 9 | Newsletter Only | Thinking in Metrics (conceptual, no notebook, see the newsletter) |
 | App A | Reference | [Appendix A - SQL Overview & Getting Started](<Appendix A - SQL Overview & Getting Started.ipynb>) |
 
-Rows marked **Coming Soon** don't exist yet. This repo is a work in progress alongside the newsletter, see the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
+Only Window Functions, Part 2 is still **Coming Soon**. See the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
 
 ## Contributing
 

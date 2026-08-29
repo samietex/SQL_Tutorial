@@ -1,54 +1,35 @@
-# SQL Server Basics Tutorial
+# SQL Tutorial
 
 ![](./SQL%20Tutorial%20Cover.png)
 
-This is for people new to databases, or who know a little SQL and want a solid grounding in SQL Server specifically. Work through the notebooks in order and by the end you'll be able to query, filter, join, and aggregate data with T-SQL, and manage database structure with DDL and DML statements.
+A hands-on companion to the *All About Data & More* SQL curriculum. This is for people new to databases, or who know a little SQL and want a solid grounding in SQL Server specifically. Work through the notebooks in order and by the end you'll be able to query, filter, aggregate, and eventually join and window-function your way through real data, plus manage database structure with DDL and DML statements.
 
 ## Getting Started
 
-To get started, work through this [notebook](/SQL%20Notebook1.ipynb). It introduces SQL and covers downloading SQL Server and SQL Server Management Studio.
-
-Work through the notebooks in this order:
-
-| Notebook Name                  | Description                                        | Link                                            |
-|--------------------------------|----------------------------------------------------|-------------------------------------------------|
-| Introduction to SQL            | Introduction to SQL queries and basic concepts    | [Notebook](/SQL%20Notebook1.ipynb) |
-| SQL Data Definition (ALTER command)          | Use the ALTER command to change the structure of a database          | [Notebook](/DDL_ALTER.ipynb) |
-| SQL Data Manipulation          | The basics of data manipulation with SQL            | [Notebook](/DML.ipynb)   |
-| SQL Data Querying    | All the basic commands and concepts for querying databases         | [Notebook](/DQL.ipynb) |
+Start with [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>). It covers prerequisites, setup, and the full course agenda.
 
 ### Prerequisites
 
-- **SQL Server**: Make sure you have SQL Server installed. You can download the free SQL Server Express Edition for practice.
+- **SQL Server**: install the free [SQL Server Express Edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads) to follow along.
+- **SQL Server Management Studio (SSMS)**: the client used to connect to your local server and run these notebooks' queries.
 
-### Installation
+## Course Agenda
 
-1. Install SQL Server Express Edition.
-2. Open SQL Server Management Studio (SSMS).
+| # | Type | Module |
+|---|------|--------|
+| 1 | Newsletter Only | What is a Database, and Why SQL (conceptual, no notebook, see the newsletter) |
+| 2 | Hands-On | [01 - SQL Basics (SELECT, WHERE, ORDER BY)](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>) |
+| 3 | Hands-On | [02 - Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)](<02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb>) |
+| 4 | Coming Soon | JOINs (INNER vs LEFT), and why grain matters |
+| 5 | Coming Soon | Subqueries to CTEs |
+| 6 | Coming Soon | Window Functions, Part 1 |
+| 7 | Coming Soon | Window Functions, Part 2 |
+| 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>) |
+| 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>) |
+| 9 | Newsletter Only | Thinking in Metrics (conceptual, no notebook, see the newsletter) |
+| App A | Reference | [Appendix A - SQL Overview & Getting Started](<Appendix A - SQL Overview & Getting Started.ipynb>) |
 
-## Core Concepts
-
-### 1. SQL Basics
-
-- SQL (Structured Query Language) is used to manage and manipulate relational databases.
-- Start constructing your `SELECT` statement to retrieve data from SQL Server.
-- Filter out unwanted data using the `WHERE` clause.
-- Order your result set using the `ORDER BY` clause.
-
-### 2. Joins
-
-- Understand different types of joins:
-  - `INNER JOIN`
-  - `LEFT OUTER JOIN`
-  - `RIGHT OUTER JOIN`
-  - `FULL OUTER JOIN`
-- Retrieve data from multiple tables using joins.
-
-### 3. Aggregates and Grouping
-
-- Use aggregate functions like `SUM`, `AVG`, `COUNT`, etc.
-- Group and summarize data using the `GROUP BY` clause.
-- Apply filters to grouped data with the `HAVING` clause.
+Rows marked **Coming Soon** don't exist yet. This repo is a work in progress alongside the newsletter, see the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
 
 ## Contributing
 
@@ -56,9 +37,9 @@ Contributions are welcome. If you'd like to improve existing content or add new 
 
 1. Fork this repository.
 2. Create a new branch for your changes.
-3. Make your modifications (add or edit Markdown files).
+3. Make your modifications (add or edit notebooks or Markdown files).
 4. Submit a pull request.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License, see the LICENSE file for details.

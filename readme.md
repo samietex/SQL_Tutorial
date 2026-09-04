@@ -51,13 +51,25 @@ Azure Data Studio works too, it has the same SQL Notebooks feature built in.
 | 4 | Hands-On | [03 - JOINs (INNER vs LEFT)](<03 - JOINs (INNER vs LEFT).ipynb>) |
 | 5 | Hands-On | [04 - Subqueries to CTEs](<04 - Subqueries to CTEs.ipynb>) |
 | 6 | Hands-On | [05 - Window Functions, Part 1](<05 - Window Functions, Part 1.ipynb>) |
-| 7 | Coming Soon | Window Functions, Part 2 |
+| 7 | Hands-On | [06 - Window Functions, Part 2](<06 - Window Functions, Part 2.ipynb>) |
 | 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>) |
 | 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>) |
 | 9 | Newsletter Only | Thinking in Metrics (conceptual, no notebook, see the newsletter) |
 | App A | Reference | [Appendix A - SQL Overview & Getting Started](<Appendix A - SQL Overview & Getting Started.ipynb>) |
 
-Only Window Functions, Part 2 is still **Coming Soon**. See the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
+Every notebook in the sequence is written and ready to run. See the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
+
+## Interview & Job-Readiness Guides
+
+Alongside the numbered lessons, [`study-guides/`](study-guides/) has one companion
+file per notebook: a concept recap, which track(s) (Data Analyst, Analytics
+Engineer, Data Engineer) and interview format (technical screen, take-home,
+whiteboard) it tends to show up in, common mistakes, real interview questions
+with model answers, and extra practice prompts beyond what's in the notebook
+itself. [`INTERVIEW_PREP.md`](INTERVIEW_PREP.md) ties it together with a
+track-by-track breakdown of what to prioritize and how to actually study the
+guides (short version: answer the questions yourself before reading the model
+answer, don't just read them passively).
 
 ## Contributing
 

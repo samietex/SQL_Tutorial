@@ -5,7 +5,9 @@ Load it once per notebook with ``%load_ext sql_tutorial``, then start a cell wit
 - ``%%sql`` to run SQLite against the lesson database. It lives in memory, needs no
   install, and starts empty every time the notebook restarts.
 - ``%%tsql`` to run T-SQL against SQL Server and the AdventureWorks2022 sample
-  database. See the Course Overview for how to set that up.
+  database. Run ``%setup_adventureworks`` once first: in Google Colab it installs
+  SQL Server and AdventureWorks for you, and on your own machine it checks the
+  setup from the Course Overview.
 
 Add ``--expect-error`` after either one (``%%sql --expect-error``) for a cell that is
 supposed to fail, so the lesson can show you the error without stopping the notebook.
@@ -16,14 +18,22 @@ touched, and errors come back as one readable line instead of a Python traceback
 import html
 import os
 import re
+import socket
 import sqlite3
+import subprocess
 import sys
+import time
 
 from IPython.core.magic import Magics, cell_magic, line_magic, magics_class
 from IPython.display import HTML, display
 
 MAX_ROWS = 50
 WRITE_VERBS = {'INSERT': 'inserted', 'UPDATE': 'updated', 'DELETE': 'deleted'}
+
+# Colab only: SQL Server runs inside the reader's own temporary session, so a fixed
+# password is fine here. It never applies to a SQL Server on someone's own machine.
+COLAB_PASSWORD = 'Tutorial!Colab2026'
+BACKUP_URL = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2022.bak'
 
 
 class SQLError(Exception):
@@ -130,6 +140,27 @@ class SQLTutorialMagics(Magics):
         self._server()
         print(f"Connected to SQL Server, database {os.environ.get('SQL_TUTORIAL_DATABASE', 'AdventureWorks2022')}.")
 
+    @line_magic
+    def setup_adventureworks(self, line):
+        """Get %%tsql ready: install SQL Server and AdventureWorks in Colab, or check the local setup."""
+        if _in_colab():
+            _install_in_colab()
+        self.server = None
+        try:
+            self._server()
+        except Exception as exc:
+            if _in_colab():
+                raise SQLError(f'Error: SQL Server is installed but would not connect: {_clean_error(exc)}') from None
+            print(
+                'SQL Server is not reachable from this notebook yet, so the %%tsql cells will not run.\n'
+                f'Reason: {_clean_error(exc)}\n'
+                'Either open this notebook in Google Colab and run this cell again, which installs '
+                'everything for you, or follow the "Run it on your own machine" steps in the Course '
+                'Overview. The saved results under each %%tsql cell show what you would get.'
+            )
+            return
+        print('AdventureWorks2022 is ready, so every %%tsql cell in this notebook will run.')
+
     @cell_magic
     def sql(self, line, cell):
         self._run(line, lambda: self._run_sqlite(cell), sqlite3.Error)
@@ -193,6 +224,102 @@ def _clean_error(exc):
     return ' '.join(text.split()).strip(' "\'()')
 
 
+def _in_colab():
+    return 'google.colab' in sys.modules
+
+
+def _port_open(port=1433):
+    with socket.socket() as sock:
+        sock.settimeout(1)
+        return sock.connect_ex(('127.0.0.1', port)) == 0
+
+
+def _shell(command, doing):
+    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+    if result.returncode != 0:
+        tail = '\n'.join((result.stdout + result.stderr).strip().splitlines()[-15:])
+        raise SQLError(f'Error: setup stopped while {doing}.\n{tail}')
+
+
+def _install_in_colab():
+    """Install SQL Server inside this Colab session and restore AdventureWorks2022 into it.
+
+    Each step is skipped when it has already happened, so running the setup cell twice
+    is quick. Colab throws the whole machine away when the session ends, which is why a
+    new session needs the setup cell again.
+    """
+    os.environ.update(
+        SQL_TUTORIAL_SERVER='localhost',
+        SQL_TUTORIAL_USER='sa',
+        SQL_TUTORIAL_PASSWORD=COLAB_PASSWORD,
+        SQL_TUTORIAL_DATABASE='AdventureWorks2022',
+    )
+    started = time.time()
+
+    if not os.path.exists('/opt/mssql/bin/sqlservr'):
+        print('Step 1 of 4: installing SQL Server 2022 Developer edition (about 2 minutes)...', flush=True)
+        release = re.search(r'VERSION_ID="([\d.]+)"', open('/etc/os-release').read()).group(1)
+        _shell(
+            'curl -fsSL https://packages.microsoft.com/keys/microsoft.asc > /etc/apt/trusted.gpg.d/microsoft.asc && '
+            f'curl -fsSL https://packages.microsoft.com/config/ubuntu/{release}/mssql-server-2022.list '
+            '> /etc/apt/sources.list.d/mssql-server-2022.list && '
+            'apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -y -q mssql-server',
+            'installing SQL Server',
+        )
+    else:
+        print('Step 1 of 4: SQL Server is already installed.', flush=True)
+
+    try:
+        import pymssql
+    except ImportError:
+        _shell(f'{sys.executable} -m pip install -q pymssql', 'installing pymssql')
+        import pymssql
+
+    if not _port_open():
+        print('Step 2 of 4: starting SQL Server...', flush=True)
+        _shell('mkdir -p /var/opt/mssql/backup && chown -R mssql:mssql /var/opt/mssql', 'preparing folders')
+        env = dict(os.environ, ACCEPT_EULA='Y', MSSQL_PID='Developer',
+                   MSSQL_SA_PASSWORD=COLAB_PASSWORD, MSSQL_MEMORY_LIMIT_MB='4096')
+        with open('/tmp/sqlservr.log', 'w') as log:
+            subprocess.Popen(['runuser', '-u', 'mssql', '--', '/opt/mssql/bin/sqlservr'],
+                             env=env, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
+    else:
+        print('Step 2 of 4: SQL Server is already running.', flush=True)
+
+    conn = None
+    for _ in range(90):
+        try:
+            conn = pymssql.connect(server='localhost', user='sa', password=COLAB_PASSWORD, database='master')
+            break
+        except pymssql.Error:
+            time.sleep(2)
+    if conn is None:
+        tail = '\n'.join(open('/tmp/sqlservr.log').read().strip().splitlines()[-15:])
+        raise SQLError(f'Error: SQL Server did not start within 3 minutes. Its log ends with:\n{tail}')
+    conn.autocommit(True)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT DB_ID('AdventureWorks2022')")
+    if cursor.fetchone()[0] is None:
+        print('Step 3 of 4: downloading the AdventureWorks2022 backup (about 50 MB)...', flush=True)
+        backup = '/var/opt/mssql/backup/AdventureWorks2022.bak'
+        _shell(f'curl -fsSL -o {backup} {BACKUP_URL} && chown mssql:mssql {backup}', 'downloading AdventureWorks')
+        print('Step 4 of 4: restoring AdventureWorks2022 into SQL Server...', flush=True)
+        cursor.execute(f"RESTORE FILELISTONLY FROM DISK = '{backup}'")
+        # The backup records Windows file paths, so each file is moved into SQL Server's Linux data folder.
+        moves = ', '.join(
+            f"MOVE '{name}' TO '/var/opt/mssql/data/{path.replace(chr(92), '/').rsplit('/', 1)[-1]}'"
+            for name, path, *_ in cursor.fetchall()
+        )
+        cursor.execute(f"RESTORE DATABASE AdventureWorks2022 FROM DISK = '{backup}' WITH {moves}, RECOVERY")
+        while cursor.nextset():
+            pass
+    else:
+        print('Steps 3 and 4: AdventureWorks2022 is already restored.', flush=True)
+    conn.close()
+    print(f'Finished in {time.time() - started:.0f} seconds.', flush=True)
+
+
 def _connect_sql_server():
     """Connect with a username and password if one is set, otherwise with Windows login."""
     server = os.environ.get('SQL_TUTORIAL_SERVER', 'localhost')
@@ -221,6 +348,12 @@ def _connect_sql_server():
         conn = pymssql.connect(server=host, port=port or '1433', user=user, password=password, database=database)
         conn.autocommit(True)
         return conn
+    if _in_colab():
+        raise SQLError(
+            'Error: this cell runs on SQL Server, which Colab does not include. Run the '
+            '%setup_adventureworks cell at the start of the AdventureWorks section first; it '
+            'installs SQL Server for this session in a few minutes.'
+        )
     raise SQLError(
         'Error: no SQL Server connection is configured. Either install the Microsoft ODBC Driver '
         'for SQL Server and pip install pyodbc (Windows login works then), or set '

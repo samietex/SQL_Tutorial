@@ -1,6 +1,6 @@
 # Study Guide 03 — JOINs (INNER vs LEFT)
 
-Companion to [`03 - JOINs (INNER vs LEFT).ipynb`](<../03 - JOINs (INNER vs LEFT).ipynb>).
+Companion to [`04-joins.ipynb`](<../04-joins.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

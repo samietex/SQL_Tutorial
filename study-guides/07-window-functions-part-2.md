@@ -1,6 +1,6 @@
 # Study Guide 06 — Window Functions, Part 2
 
-Companion to [`06 - Window Functions, Part 2.ipynb`](<../06 - Window Functions, Part 2.ipynb>).
+Companion to [`07-window-functions-part-2.ipynb`](<../07-window-functions-part-2.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

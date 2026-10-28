@@ -1,6 +1,6 @@
 # Study Guide — Appendix A: SQL Overview & Getting Started
 
-Companion to [`Appendix A - SQL Overview & Getting Started.ipynb`](<../Appendix A - SQL Overview & Getting Started.ipynb>).
+Companion to [`appendix-a-sql-server-reference.ipynb`](<../appendix-a-sql-server-reference.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

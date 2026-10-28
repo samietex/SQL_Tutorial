@@ -1,6 +1,6 @@
 # Study Guide 01 — SQL Basics (SELECT, WHERE, ORDER BY)
 
-Companion to [`01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb`](<../01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>).
+Companion to [`02-sql-basics.ipynb`](<../02-sql-basics.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

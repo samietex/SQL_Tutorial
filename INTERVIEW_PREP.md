@@ -23,9 +23,9 @@ Interviews lean heavily on `SELECT`/`WHERE`/`ORDER BY` fluency, `GROUP BY` repor
 
 | Priority | Notebook | Guide |
 |---|---|---|
-| Highest | 01, 02, 03 | [01](study-guides/01-sql-basics.md), [02](study-guides/02-aggregation.md), [03](study-guides/03-joins.md) |
-| High | 04, 05 | [04](study-guides/04-subqueries-to-ctes.md), [05](study-guides/05-window-functions-part-1.md) |
-| Useful, less common | 06, 08a, 08b, Appendix A | [06](study-guides/06-window-functions-part-2.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md), [Appendix A](study-guides/appendix-a-sql-overview.md) |
+| Highest | 01, 02, 03 | [01](study-guides/02-sql-basics.md), [02](study-guides/03-aggregation.md), [03](study-guides/04-joins.md) |
+| High | 04, 05 | [04](study-guides/05-subqueries-to-ctes.md), [05](study-guides/06-window-functions-part-1.md) |
+| Useful, less common | 06, 08a, 08b, Appendix A | [06](study-guides/07-window-functions-part-2.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md), [Appendix A](study-guides/appendix-a-sql-server-reference.md) |
 
 What to over-prepare: the `WHERE` vs `HAVING` distinction (02), the anti-join "customers with no orders" pattern (03), and explaining a join-grain miscount out loud without being asked to code it (03), that last one is a favorite because it tests judgment, not just syntax recall.
 
@@ -35,9 +35,9 @@ Interviews add CTEs, window functions, and code readability/maintainability on t
 
 | Priority | Notebook | Guide |
 |---|---|---|
-| Highest | 02, 03, 04, 05 | [02](study-guides/02-aggregation.md), [03](study-guides/03-joins.md), [04](study-guides/04-subqueries-to-ctes.md), [05](study-guides/05-window-functions-part-1.md) |
-| High | 06 | [06](study-guides/06-window-functions-part-2.md) |
-| Useful | 01, 08a, 08b | [01](study-guides/01-sql-basics.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md) |
+| Highest | 02, 03, 04, 05 | [02](study-guides/03-aggregation.md), [03](study-guides/04-joins.md), [04](study-guides/05-subqueries-to-ctes.md), [05](study-guides/06-window-functions-part-1.md) |
+| High | 06 | [06](study-guides/07-window-functions-part-2.md) |
+| Useful | 01, 08a, 08b | [01](study-guides/02-sql-basics.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md) |
 
 What to over-prepare: CTE-vs-nested-subquery readability tradeoffs (04), the `ROW_NUMBER()` greatest-n-per-group pattern (05), and being able to explain *why* you'd reach for a CTE vs a temp table in a specific scenario (04), that's a judgment question, and judgment is exactly what a take-home review is scoring.
 
@@ -47,9 +47,9 @@ Interviews go deepest on window function frames, DML safety, and DDL/schema desi
 
 | Priority | Notebook | Guide |
 |---|---|---|
-| Highest | 05, 06, 08a, 08b | [05](study-guides/05-window-functions-part-1.md), [06](study-guides/06-window-functions-part-2.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md) |
-| High | 02, 03, 04 | [02](study-guides/02-aggregation.md), [03](study-guides/03-joins.md), [04](study-guides/04-subqueries-to-ctes.md) |
-| Useful | 01, Appendix A | [01](study-guides/01-sql-basics.md), [Appendix A](study-guides/appendix-a-sql-overview.md) |
+| Highest | 05, 06, 08a, 08b | [05](study-guides/06-window-functions-part-1.md), [06](study-guides/07-window-functions-part-2.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md) |
+| High | 02, 03, 04 | [02](study-guides/03-aggregation.md), [03](study-guides/04-joins.md), [04](study-guides/05-subqueries-to-ctes.md) |
+| Useful | 01, Appendix A | [01](study-guides/02-sql-basics.md), [Appendix A](study-guides/appendix-a-sql-server-reference.md) |
 
 What to over-prepare: the `LAST_VALUE()` frame trap (06), it's a genuine senior/mid differentiator question; "what's the first thing you check before an `UPDATE`/`DELETE` in production" (08a); and walking through adding a foreign key constraint to an existing table without breaking existing rows (08b).
 
@@ -70,4 +70,4 @@ Passing an interview and having something to point to in one are different thing
 
 ## After this repo
 
-The [Course Overview](<00 - Course Overview.ipynb>) and the [reading version of this curriculum](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready) cover where the roadmap goes next. This repo's own ceiling is standard SQL against a single relational engine, it doesn't cover query performance tuning, execution plans, indexing strategy in depth, or engine-specific extensions (JSON functions, PL/pgSQL, T-SQL stored procedures) that senior DE interviews sometimes probe. Treat those as the next layer once the fundamentals here are solid enough to explain without hesitation.
+The [Course Overview](<00-course-overview.ipynb>) and the [reading version of this curriculum](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready) cover where the roadmap goes next. This repo's own ceiling is standard SQL against a single relational engine, it doesn't cover query performance tuning, execution plans, indexing strategy in depth, or engine-specific extensions (JSON functions, PL/pgSQL, T-SQL stored procedures) that senior DE interviews sometimes probe. Treat those as the next layer once the fundamentals here are solid enough to explain without hesitation.

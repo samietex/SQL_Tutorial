@@ -1,6 +1,6 @@
 # Study Guide 08b — Changing Data, Part 2 (CREATE & ALTER TABLE)
 
-Companion to [`08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb`](<../08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>).
+Companion to [`08b-changing-data-part-2.ipynb`](<../08b-changing-data-part-2.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

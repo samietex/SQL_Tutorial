@@ -1,6 +1,6 @@
 # Study Guide 02 — Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)
 
-Companion to [`02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb`](<../02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb>).
+Companion to [`03-aggregation.ipynb`](<../03-aggregation.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

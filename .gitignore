@@ -1,1 +1,13 @@
+# Internal working files: kept locally, never published.
+_internal/
 *.mmd
+desktop.ini
+
+# Local environment and editor clutter.
+.ipynb_checkpoints/
+__pycache__/
+.venv/
+
+# The %%sql helper is published on the `assets` branch, and each notebook's setup
+# cell downloads it from there (see _internal/sync_assets.py). Kept here locally.
+sql_tutorial.py

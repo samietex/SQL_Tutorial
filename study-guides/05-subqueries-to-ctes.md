@@ -1,6 +1,6 @@
 # Study Guide 04 — Subqueries to CTEs
 
-Companion to [`04 - Subqueries to CTEs.ipynb`](<../04 - Subqueries to CTEs.ipynb>).
+Companion to [`05-subqueries-to-ctes.ipynb`](<../05-subqueries-to-ctes.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

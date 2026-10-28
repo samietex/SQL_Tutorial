@@ -1,12 +1,12 @@
 # SQL Tutorial
 
-![](./SQL%20Tutorial%20Cover.png)
+![](graphics/sql-tutorial-cover.png)
 
 A hands-on companion to the *All About Data & More* SQL curriculum. This is for people new to databases, or who know a little SQL and want a solid grounding in SQL Server specifically. Work through the notebooks in order and by the end you'll be able to query, filter, aggregate, and eventually join and window-function your way through real data, plus manage database structure with DDL and DML statements.
 
 ## Getting Started
 
-**Already comfortable with git, VS Code, and SQL Server?** Clone the repo, open it in VS Code with the mssql extension installed, restore AdventureWorks2022, and start with [`01 - SQL Basics`](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>). Everything below is for anyone who isn't, worth a read even if you're experienced, since it's specific to this repo, not a generic git tutorial. The full version of this lives in [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>), read that first if you're new here.
+**Already comfortable with git, VS Code, and SQL Server?** Clone the repo, open it in VS Code with the mssql extension installed, restore AdventureWorks2022, and start with [`01 - SQL Basics`](<02-sql-basics.ipynb>). Everything below is for anyone who isn't, worth a read even if you're experienced, since it's specific to this repo, not a generic git tutorial. The full version of this lives in [`00-course-overview.ipynb`](<00-course-overview.ipynb>), read that first if you're new here.
 
 ### What you're actually looking at
 
@@ -46,16 +46,16 @@ Azure Data Studio works too, it has the same SQL Notebooks feature built in.
 | # | Type | Module |
 |---|------|--------|
 | 1 | Newsletter Only | What is a Database, and Why SQL (conceptual, no notebook, see the newsletter) |
-| 2 | Hands-On | [01 - SQL Basics (SELECT, WHERE, ORDER BY)](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>) |
-| 3 | Hands-On | [02 - Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)](<02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb>) |
-| 4 | Hands-On | [03 - JOINs (INNER vs LEFT)](<03 - JOINs (INNER vs LEFT).ipynb>) |
-| 5 | Hands-On | [04 - Subqueries to CTEs](<04 - Subqueries to CTEs.ipynb>) |
-| 6 | Hands-On | [05 - Window Functions, Part 1](<05 - Window Functions, Part 1.ipynb>) |
-| 7 | Hands-On | [06 - Window Functions, Part 2](<06 - Window Functions, Part 2.ipynb>) |
-| 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>) |
-| 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>) |
+| 2 | Hands-On | [01 - SQL Basics (SELECT, WHERE, ORDER BY)](<02-sql-basics.ipynb>) |
+| 3 | Hands-On | [02 - Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)](<03-aggregation.ipynb>) |
+| 4 | Hands-On | [03 - JOINs (INNER vs LEFT)](<04-joins.ipynb>) |
+| 5 | Hands-On | [04 - Subqueries to CTEs](<05-subqueries-to-ctes.ipynb>) |
+| 6 | Hands-On | [05 - Window Functions, Part 1](<06-window-functions-part-1.ipynb>) |
+| 7 | Hands-On | [06 - Window Functions, Part 2](<07-window-functions-part-2.ipynb>) |
+| 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a-changing-data-part-1.ipynb>) |
+| 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b-changing-data-part-2.ipynb>) |
 | 9 | Newsletter Only | Thinking in Metrics (conceptual, no notebook, see the newsletter) |
-| App A | Reference | [Appendix A - SQL Overview & Getting Started](<Appendix A - SQL Overview & Getting Started.ipynb>) |
+| App A | Reference | [Appendix A - SQL Overview & Getting Started](<appendix-a-sql-server-reference.ipynb>) |
 
 Every notebook in the sequence is written and ready to run. See the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
 

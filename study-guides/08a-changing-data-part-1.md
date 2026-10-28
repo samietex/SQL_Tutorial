@@ -1,6 +1,6 @@
 # Study Guide 08a — Changing Data, Part 1 (INSERT, UPDATE, DELETE)
 
-Companion to [`08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb`](<../08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>).
+Companion to [`08a-changing-data-part-1.ipynb`](<../08a-changing-data-part-1.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

@@ -1,6 +1,6 @@
 # Study Guide 00 — Course Overview
 
-Companion to [`00 - Course Overview.ipynb`](<../00 - Course Overview.ipynb>).
+Companion to [`00-course-overview.ipynb`](<../00-course-overview.ipynb>).
 
 | Tracks | Interview format |
 |---|---|

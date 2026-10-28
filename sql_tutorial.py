@@ -15,6 +15,7 @@ supposed to fail, so the lesson can show you the error without stopping the note
 Results show ``NULL`` exactly as a SQL client would, writes report how many rows they
 touched, and errors come back as one readable line instead of a Python traceback.
 """
+import base64
 import html
 import os
 import re
@@ -257,14 +258,28 @@ def _install_in_colab():
     started = time.time()
 
     if not os.path.exists('/opt/mssql/bin/sqlservr'):
-        print('Step 1 of 4: installing SQL Server 2022 Developer edition (about 2 minutes)...', flush=True)
+        print('Step 1 of 4: installing SQL Server Developer edition (about 2 minutes)...', flush=True)
         release = re.search(r'VERSION_ID="([\d.]+)"', open('/etc/os-release').read()).group(1)
         _shell(
-            'curl -fsSL https://packages.microsoft.com/keys/microsoft.asc > /etc/apt/trusted.gpg.d/microsoft.asc && '
-            f'curl -fsSL https://packages.microsoft.com/config/ubuntu/{release}/mssql-server-2022.list '
-            '> /etc/apt/sources.list.d/mssql-server-2022.list && '
+            'curl -fsSL https://packages.microsoft.com/keys/microsoft.asc > /etc/apt/trusted.gpg.d/microsoft.asc',
+            'downloading the Microsoft signing key',
+        )
+        # Newer package lists expect the key unwrapped from its text armor, at a fixed path.
+        armored = open('/etc/apt/trusted.gpg.d/microsoft.asc').read()
+        body = armored.split('\n\n', 1)[1].split('\n=', 1)[0]
+        with open('/usr/share/keyrings/microsoft-prod.gpg', 'wb') as key:
+            key.write(base64.b64decode(''.join(body.split())))
+        # Microsoft publishes SQL Server 2022 up to Ubuntu 22.04 and 2025 from 22.04 on.
+        # Either one restores the AdventureWorks2022 backup and runs every query in the course.
+        lists = ' '.join(
+            f'https://packages.microsoft.com/config/ubuntu/{release}/mssql-server-{year}.list'
+            for year in ('2022', '2025')
+        )
+        _shell(
+            f'for url in {lists}; do curl -fsSL "$url" > /etc/apt/sources.list.d/mssql-server.list && break; done; '
+            'test -s /etc/apt/sources.list.d/mssql-server.list && '
             'apt-get update -q && DEBIAN_FRONTEND=noninteractive apt-get install -y -q mssql-server',
-            'installing SQL Server',
+            f'installing SQL Server on Ubuntu {release}',
         )
     else:
         print('Step 1 of 4: SQL Server is already installed.', flush=True)

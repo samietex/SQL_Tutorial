@@ -1,0 +1,8 @@
+# The lesson sections only need Jupyter: SQLite ships with Python itself.
+jupyterlab
+
+# Optional, only for the %%tsql sections that run on SQL Server and AdventureWorks.
+# pyodbc signs in with your Windows login and needs Microsoft's ODBC Driver for SQL Server.
+# pymssql signs in with a username and password, for example SQL Server running in Docker.
+pyodbc
+pymssql

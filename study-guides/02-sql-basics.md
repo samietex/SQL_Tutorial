@@ -1,54 +1,92 @@
-# Study Guide 01 — SQL Basics (SELECT, WHERE, ORDER BY)
+# Study Guide 02: SQL Basics (SELECT, WHERE, ORDER BY)
 
 Companion to [`02-sql-basics.ipynb`](<../02-sql-basics.ipynb>).
 
 | Tracks | Interview format |
-|---|---|
-| Data Analyst · Analytics Engineer · Data Engineer | Technical screen (live coding) |
+| --- | --- |
+| Data Analyst, Analytics Engineer, Data Engineer | Technical screen (live coding), take-home |
 
 ## Concept recap
 
-`SELECT` picks columns, `WHERE` filters rows, `ORDER BY` sorts the result. Column aliases (`AS "Department"`) make output readable. `IN (...)` replaces a chain of `OR` conditions for matching against a list of values. `COUNT(DISTINCT column)` counts unique values rather than every row.
+`SELECT` chooses columns, `WHERE` chooses rows, and `ORDER BY` sorts what's left. The database runs them in a different order from the one you write them in: `FROM`, then `WHERE`, then `SELECT`, then `ORDER BY`. That's why `ORDER BY` can use a column alias and standard SQL's `WHERE` can't (SQLite allows it; SQL Server and PostgreSQL don't).
 
-The one idea worth over-learning here: SQL Server doesn't run a query in the order you *write* it. `FROM` and `WHERE` run first, `SELECT` picks columns next, and `ORDER BY` runs last. That's why a column alias created in `SELECT` isn't visible to `WHERE`, at the point `WHERE` runs, that alias doesn't exist yet.
+`WHERE` keeps a row only when its condition is **true**. A comparison with `NULL` is neither true nor false but **unknown**, so a row with a missing value drops out of `total > 100` and out of `total <= 100`. In the notebook, those two filters return three orders each from a table of seven, and David's order 5 is in neither. Missing values are found with `IS NULL`, never `= NULL`, which silently returns no rows.
+
+`AND` binds more tightly than `OR`, so `A OR B AND C` means `A OR (B AND C)`. Parentheses, or `IN` for a list of values, say what you meant. Without `ORDER BY`, row order is undefined, and engines disagree about where `NULL`s sort: SQLite and SQL Server put them first in ascending order, PostgreSQL last.
 
 ## Key syntax cheat sheet
 
 ```sql
-SELECT col1, col2 AS "Readable Name"
-FROM Schema.Table
-WHERE col3 = 'value'          -- or: col3 IN ('a', 'b', 'c')
-ORDER BY col1 ASC;             -- ASC is the default, DESC reverses it
+-- Columns, rows, and order
+SELECT
+    order_id,
+    customer_name,
+    total
+FROM lesson_orders
+WHERE status = 'completed'
+  AND total > 100
+ORDER BY
+    total DESC;
 
-SELECT COUNT(DISTINCT col) AS "Distinct Count"
-FROM Schema.Table;
+-- Finding missing values
+SELECT
+    order_id
+FROM lesson_orders
+WHERE total IS NULL;
+
+-- A list of values, with no AND/OR precedence to get wrong
+SELECT
+    order_id
+FROM lesson_orders
+WHERE customer_name IN ('Maria', 'Amina')
+  AND total > 100;
+
+-- Checking the actual values before filtering on text
+SELECT DISTINCT status
+FROM lesson_orders;
 ```
 
-## Gotchas & common mistakes
+On SQL Server, `SELECT TOP 5 ...` takes the first rows, where SQLite writes `LIMIT 5` at the end.
 
-- Trying to filter or sort on a `SELECT`-defined alias inside the same query's `WHERE` clause, it silently fails or errors because `WHERE` runs before `SELECT` in logical execution order, not textual order.
-- Chaining `OR col = 'a' OR col = 'b' OR col = 'c'` when `IN ('a', 'b', 'c')` says the same thing more clearly, this is a small thing interviewers notice in a live-coding screen.
-- Forgetting `DISTINCT` when a question asks for unique values and getting a row count instead of a distinct-value count.
+## Gotchas and common mistakes
 
-## Interview questions & model answers
+- Writing `= NULL` or `<> NULL`. Both return nothing, without an error.
+- Assuming a filter and its opposite cover every row. They miss every row where the column is `NULL`; on AdventureWorks, `SalesPersonID = 279` and `SalesPersonID <> 279` together miss 27,659 of 31,465 orders.
+- Mixing `AND` and `OR` without parentheses.
+- Typing a text value from memory. `'Completed'` doesn't match `'completed'` in SQLite, but it does in a case-insensitive SQL Server database, so the same query can behave differently on two engines.
+- Relying on row order without `ORDER BY`.
 
-**Q1: "Why can't I reference a column alias I just created in `SELECT` inside the `WHERE` clause of that same query?"**
-Model answer: "Because of SQL's logical order of execution, `FROM` and `WHERE` run before `SELECT` does. By the time `WHERE` is evaluated, the alias from `SELECT` doesn't exist yet. If I need to filter on a computed value, I either repeat the expression in `WHERE`, or wrap the query in a CTE and filter in the outer query, where the alias does exist."
+## Interview questions and model answers
 
-**Q2: "Write a query to find every distinct job title in an employee table, and how many there are."**
-Model answer, live-coded:
+**Q1 (live coding): "Return completed orders over $100, largest first."**
+Model answer:
 ```sql
-SELECT DISTINCT JobTitle FROM HumanResources.Employee;
-
-SELECT COUNT(DISTINCT JobTitle) AS "Distinct Job Titles"
-FROM HumanResources.Employee;
+SELECT
+    order_id,
+    customer_name,
+    total
+FROM lesson_orders
+WHERE status = 'completed'
+  AND total > 100
+ORDER BY
+    total DESC;
 ```
-"The first gives me the list, the second gives me the count, `COUNT(DISTINCT ...)` doesn't double-count repeated titles."
+"I'd also mention that any completed order with a missing total won't appear, since `total > 100` is unknown for it, and ask whether the business wants those flagged."
 
-**Q3: "What's the practical difference between `WHERE col IN ('a','b','c')` and three `OR` conditions?"**
-Model answer: "Functionally identical, same result, same execution plan in virtually every engine. `IN` is just more readable once you're past two or three values, and it's less error-prone to maintain, adding a fourth value is one more item in a list instead of one more `OR col = ...` clause to copy-paste correctly."
+**Q2: "Why does `WHERE column = NULL` return nothing?"**
+Model answer: "Because `NULL` means unknown, and comparing anything to unknown gives unknown, not true. `WHERE` only keeps rows where the condition is true. The right test is `IS NULL`, which always returns true or false."
+
+**Q3: "Can you use a column alias in a WHERE clause?"**
+Model answer: "Not in standard SQL. `WHERE` is evaluated before `SELECT`, so the alias doesn't exist yet. `ORDER BY` runs after `SELECT`, so it can use the alias. SQLite happens to accept an alias in `WHERE`, but SQL Server and PostgreSQL reject it, so I repeat the expression in `WHERE` to keep the query portable."
+
+**Q4: "What does this return: `WHERE name = 'Maria' OR name = 'Amina' AND total > 100`?"**
+Model answer: "Every Maria order, plus Amina's orders over 100, because `AND` binds first. If the intent was Maria's or Amina's orders over 100, it needs parentheses around the `OR`, or `name IN ('Maria', 'Amina') AND total > 100`."
+
+**Q5: "How would you find the rows a filter left out?"**
+Model answer: "Count the filter, count its opposite, and compare with the total. If they don't add up, the gap is usually `NULL`s, which I'd confirm with `IS NULL`."
 
 ## Extra practice
 
-- Against `Sales.Customer`, write a query that returns every customer in a specific `TerritoryID`, sorted by `AccountNumber`. Then try to sort by a column alias you invent in the same `SELECT`, and explain out loud why it errors.
-- Rewrite the `HumanResources.Employee` `JobTitle IN (...)` query from the notebook as three `OR` conditions, then back again, until the equivalence feels automatic.
+- On AdventureWorks, `Production.Product` has 504 products. Count the black ones, the ones that aren't black, and the ones with no color, and confirm the three counts add up to 504 (the notebook's stretch exercise).
+- Rewrite an `IN` list as `OR` conditions and back again, adding the parentheses each time, until the equivalence feels automatic.
+- Write a query that sorts completed orders by total, smallest first, with missing totals at the end, once with `NULLS LAST` in SQLite and once with a `CASE` expression for SQL Server.

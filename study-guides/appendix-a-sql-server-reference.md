@@ -1,57 +1,63 @@
-# Study Guide — Appendix A: SQL Overview & Getting Started
+# Study Guide: Appendix A, SQL Server Reference
 
 Companion to [`appendix-a-sql-server-reference.ipynb`](<../appendix-a-sql-server-reference.ipynb>).
 
 | Tracks | Interview format |
-|---|---|
-| Data Analyst (entry-level screening) · Analytics Engineer · Data Engineer | Technical screen (definitional / conceptual opener) |
+| --- | --- |
+| Data Analyst, Analytics Engineer, Data Engineer | Technical screen, especially for roles that name a specific database |
 
 ## Concept recap
 
-SQL splits into three sub-languages: **DDL** (Data Definition Language, `CREATE`/`ALTER`/`DROP`, structure), **DML** (Data Manipulation Language, `INSERT`/`UPDATE`/`DELETE`, data), and **DQL** (Data Query Language, `SELECT` and its clauses, reading data back out). SQL is both an ANSI and ISO standard, most engines implement the standard core and layer proprietary extensions on top.
+Most of SQL is shared across engines: `SELECT`, `WHERE`, `JOIN`, `GROUP BY`, CTEs, and window functions behave the same almost everywhere. The differences sit in details, and the dangerous ones change an answer without an error: whole-number averages and division, text comparison and collation, a scalar subquery returning several rows, whether foreign keys are enforced, and how `NULL` is treated by `UNIQUE` or by joining text with `+`. The appendix's side-by-side table lists every difference the course met, with the notebook that shows it.
 
-`CREATE` makes new objects, databases, tables, indexes. `CREATE INDEX` in particular speeds up retrieval on a column that's frequently searched or joined on. `ALTER` modifies existing objects, add/remove/modify a column, add a constraint. `DROP` permanently deletes an object and its data, this notebook's best-practices list is worth internalizing before you ever run one against anything real: back up first, understand dependencies between objects before dropping one, use transactions when making several related changes, and review the schema periodically as the application evolves.
+On an unfamiliar database, the first move is to explore it: `INFORMATION_SCHEMA.TABLES` and `INFORMATION_SCHEMA.COLUMNS` (standard SQL, so they work on PostgreSQL and MySQL too) list tables, columns, types, and nullability, and SQL Server's `sys.foreign_keys` shows how tables connect.
 
 ## Key syntax cheat sheet
 
+| Task | SQLite | SQL Server |
+| --- | --- | --- |
+| First rows | `LIMIT 5` | `SELECT TOP 5` |
+| Paging | `LIMIT 5 OFFSET 10` | `ORDER BY ... OFFSET 10 ROWS FETCH NEXT 5 ROWS ONLY` |
+| Join text | `a \|\| b` | `a + b`, `CONCAT`, `CONCAT_WS` |
+| First non-null | `COALESCE` | `COALESCE` or `ISNULL` |
+| Today | `date('now')` | `CAST(GETDATE() AS DATE)` |
+| Rows changed | `changes()` | `@@ROWCOUNT` |
+| Temporary table | `CREATE TEMP TABLE` | `#name` |
+
 ```sql
-CREATE DATABASE StudentDB;
-CREATE TABLE Students (
-    StudentID INT PRIMARY KEY,
-    FirstName VARCHAR(50),
-    LastName VARCHAR(50)
-);
-CREATE INDEX idx_lastname ON Students(LastName);
-
-ALTER TABLE Students ADD Email VARCHAR(100);
-ALTER TABLE Students ALTER COLUMN Address NVARCHAR(500);
-ALTER TABLE Students ADD CONSTRAINT PK_StudentID PRIMARY KEY (StudentID);
-
-DROP TABLE Students;
-DROP DATABASE StudentDB;
+-- What's in this table?
+SELECT
+    COLUMN_NAME,
+    DATA_TYPE,
+    IS_NULLABLE
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = 'Sales'
+  AND TABLE_NAME = 'SalesOrderHeader'
+ORDER BY
+    ORDINAL_POSITION;
 ```
 
-## Gotchas & common mistakes
+## Gotchas and common mistakes
 
-- Treating `DROP` casually because it "just deletes a table", it deletes the table *and all its data*, permanently, with no undo unless a backup exists.
-- Indexing every column "just in case." An index speeds up reads on that column, but every index also slows down writes (`INSERT`/`UPDATE`/`DELETE` now has to maintain the index too) and takes storage, indexing is a trade-off, not a free win.
-- Confusing `DELETE` (DML, removes rows, filterable, this repo's `08a`) with `DROP` (DDL, removes the whole object).
+- Joining text with `+` when a part can be `NULL`: the whole result is `NULL`. `CONCAT_WS` skips `NULL` parts.
+- Reading `DATEDIFF(year, ...)` as full years; it counts boundaries crossed.
+- Filtering dates with `BETWEEN` on a column that carries times, which misses the last day after midnight.
+- Using `FLOAT` for money.
+- Running `DROP` without a backup or a check of what depends on the object.
 
-## Interview questions & model answers
+## Interview questions and model answers
 
-**Q1 (common opener): "What are the three sub-languages of SQL?"**
-Model answer: "DDL for structure, `CREATE`, `ALTER`, `DROP`. DML for data, `INSERT`, `UPDATE`, `DELETE`. And DQL, which in practice is just `SELECT` and its clauses, for reading data back."
+**Q1: "You learned SQL on one database and this job uses another. What would you watch for?"**
+Model answer: "The core is the same, so I'd focus on the details that change answers silently: integer division and averages, how text compares, how `NULL`s sort, what happens with ambiguous `GROUP BY` columns or multi-row subqueries, and whether constraints like foreign keys are enforced. And row-limiting syntax, `LIMIT` against `TOP`."
 
-**Q2: "What does a database index actually do, and why not add one to every column?"**
-Model answer: "An index lets the engine find matching rows without scanning the whole table, it speeds up reads and joins on the indexed column significantly. The trade-off is every index has to be maintained on every write, so more indexes mean slower `INSERT`/`UPDATE`/`DELETE` and more storage used. I'd index columns that are actually searched or joined on frequently, not everything by default."
+**Q2: "How do you get to know a database you've never seen?"**
+Model answer: "List the schemas and tables from `INFORMATION_SCHEMA`, read the columns, types, and nullability of the ones that matter, look at the foreign keys to see how they connect, and then, for each table, work out what one row represents before I query it."
 
-**Q3: "What would you check before running a `DROP TABLE` in a real environment?"**
-Model answer: "That a current backup exists, that I understand what else depends on this table, foreign keys, views, application code, so dropping it doesn't break something else silently, and if I'm making several related structural changes at once, wrapping them in a transaction so a partial failure doesn't leave the schema half-migrated."
-
-**Q4: "What's the difference between `DROP TABLE` and `DELETE FROM table`?"**
-Model answer: "`DROP TABLE` is DDL, it removes the table object itself, structure and all data, permanently. `DELETE FROM table` is DML, it removes rows, can be filtered with `WHERE`, and the table structure stays intact afterward, empty or partially emptied, but still there."
+**Q3: "Why might a VARCHAR column not be enough?"**
+Model answer: "`VARCHAR` may not store characters outside the database's code page; `NVARCHAR` stores Unicode, which names in many languages need. On SQL Server, Unicode literals are written with an `N` prefix."
 
 ## Extra practice
 
-- Write out, from memory, the full `CREATE TABLE` → `ALTER TABLE ADD CONSTRAINT PRIMARY KEY` → `CREATE INDEX` sequence for a table you invent, then compare against the `Students` example.
-- Explain out loud, in under a minute, why `DROP` needs more caution in an interview answer than `DELETE` does, this notebook's best-practices list (backup, dependencies, transactions, schema review) is a good structure to hang the answer on.
+- Pick one AdventureWorks table you haven't used and describe its grain, its key, and which columns can be `NULL`, using only `INFORMATION_SCHEMA` queries.
+- Rewrite three queries from earlier notebooks so they run on SQL Server instead of SQLite.
+- Build a full name from `Person.Person` three ways and explain each result for a person with no middle name.

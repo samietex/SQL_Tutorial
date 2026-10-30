@@ -1,63 +1,90 @@
-# Study Guide 03 — JOINs (INNER vs LEFT)
+# Study Guide 04: JOINs (INNER vs LEFT, and grain)
 
 Companion to [`04-joins.ipynb`](<../04-joins.ipynb>).
 
 | Tracks | Interview format |
-|---|---|
-| Data Analyst · Analytics Engineer · Data Engineer | Technical screen (live coding), take-home |
+| --- | --- |
+| Data Analyst, Analytics Engineer, Data Engineer | Technical screen (live coding), take-home |
 
 ## Concept recap
 
-`INNER JOIN` returns a row only when both sides match, non-matching rows on either side vanish silently. `LEFT JOIN` keeps every row from the left table regardless of a match, filling unmatched right-side columns with `NULL`. `LEFT JOIN ... WHERE right.key IS NULL` is the standard "find things with no match" pattern, an anti-join.
+A join tests pairs of rows against the `ON` condition and combines each matching pair into one result row. `INNER JOIN` keeps only matched pairs; `LEFT JOIN` also keeps every left-hand row that found no match, with `NULL` in the right-hand columns. A join without a useful condition pairs every row with every row (a cross join: 4 customers and 3 orders make 12 rows).
 
-The higher-stakes idea: joining changes your row **grain**. `Sales.Customer` is one row per customer; join it to `Sales.SalesOrderHeader` and the result is one row per *order*, a customer with five orders now appears five times. `COUNT(*)` after that join counts orders, not customers, a mismatch that quietly inflates reports if you don't re-`GROUP BY` back to the grain you actually want.
+The higher-stakes idea is **grain**. Join customers to their orders and the result has one row per order, so a customer-level value like a credit limit is repeated once per order. In the notebook, summing credit limits after the join gives 900 instead of 800, and `SUM(DISTINCT)` gives 600, which is also wrong because two customers share a limit of 200. The fix is to aggregate to the grain you want before joining, or to sum the right column at the right grain.
+
+Two quieter traps: a `WHERE` condition on the right-hand table turns a `LEFT JOIN` back into an inner one, because unmatched rows have `NULL` there and fail the condition; and `COUNT(*)` counts an unmatched row as 1, so counting zeros needs `COUNT(right_table.key)`.
 
 ## Key syntax cheat sheet
 
 ```sql
--- INNER JOIN: only matching rows on both sides
-SELECT c.CustomerID, s.SalesOrderID
-FROM Sales.Customer c
-INNER JOIN Sales.SalesOrderHeader s ON c.CustomerID = s.CustomerID;
+-- Every customer, with their orders if any
+SELECT
+    c.customer_id,
+    c.customer_name,
+    o.order_id,
+    o.amount
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id;
 
--- LEFT JOIN + IS NULL: the anti-join pattern, "customers with no orders"
-SELECT c.CustomerID
-FROM Sales.Customer c
-LEFT JOIN Sales.SalesOrderHeader s ON c.CustomerID = s.CustomerID
-WHERE s.SalesOrderID IS NULL;
+-- Anti-join: customers with no orders
+SELECT
+    c.customer_id,
+    c.customer_name
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+WHERE o.order_id IS NULL;
 
--- Re-establishing per-customer grain after a join
-SELECT c.CustomerID, COUNT(s.SalesOrderID) AS "Order Count"
-FROM Sales.Customer c
-INNER JOIN Sales.SalesOrderHeader s ON c.CustomerID = s.CustomerID
-GROUP BY c.CustomerID;
+-- Count per customer, keeping zeros
+SELECT
+    c.customer_name,
+    COUNT(o.order_id) AS orders
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+GROUP BY
+    c.customer_id,
+    c.customer_name;
+
+-- Filter the right-hand table in ON, not WHERE, to keep unmatched rows
+SELECT
+    c.customer_name,
+    COUNT(o.order_id) AS big_orders
+FROM customers AS c
+LEFT JOIN orders AS o
+    ON c.customer_id = o.customer_id
+   AND o.amount >= 60
+GROUP BY
+    c.customer_id,
+    c.customer_name;
 ```
 
-## Gotchas & common mistakes
+## Gotchas and common mistakes
 
-- Running `COUNT(*)` right after a one-to-many join and reporting it as a count of the "one" side, it's actually counting the "many" side.
-- Using `WHERE s.CustomerID IS NULL` (a column pulled from the *left* table's join key when both sides happen to share a name) instead of a column that's genuinely only populated by the right table, checking the wrong column can silently return zero rows even when unmatched rows exist.
-- Reaching for `INNER JOIN` by habit when the question actually wants "all of X, whether or not Y exists", that's a `LEFT JOIN` question, not an `INNER JOIN` question.
+- Summing a parent-level column after a one-to-many join, which counts it once per child row.
+- Trusting `SUM(DISTINCT)` to undo duplication; it removes equal values, not repeated rows.
+- Putting a right-hand filter in `WHERE` after a `LEFT JOIN`. On AdventureWorks, filtering 2014 orders that way keeps 10,354 customers instead of all 19,820.
+- `COUNT(*)` after a `LEFT JOIN`, which reports 1 for a customer with no orders.
+- Joining on the wrong columns, like `customer_id = order_id`. It runs, and returns nonsense or nothing.
+- Treating two numbers that agree as proof. In AdventureWorks, an inner join to `Person.Person` loses exactly as many customers (701) as never ordered, by coincidence.
 
-## Interview questions & model answers
+## Interview questions and model answers
 
-**Q1 (live coding, extremely common): "Write a query to find every customer who has never placed an order."**
-Model answer:
-```sql
-SELECT c.CustomerID, c.AccountNumber
-FROM Sales.Customer c
-LEFT JOIN Sales.SalesOrderHeader s ON c.CustomerID = s.CustomerID
-WHERE s.SalesOrderID IS NULL;
-```
-"`LEFT JOIN` keeps every customer, even ones with no matching order, and fills the order columns with `NULL` when there's no match. Filtering `WHERE s.SalesOrderID IS NULL` keeps only the customers where that never happened, an anti-join."
+**Q1 (extremely common): "Find every customer who has never placed an order."**
+Model answer: the anti-join above. "The `LEFT JOIN` keeps every customer, and `WHERE o.order_id IS NULL` keeps only those whose order columns came back empty. I test a column that can't be `NULL` in a real match, like the order's primary key. `NOT EXISTS` with a correlated subquery is an equally good answer."
 
-**Q2: "My revenue total doubled after I joined the orders table to the line items table. What happened?"**
-Model answer: "The join changed my row grain. An orders table is one row per order; a line items table is one row per line item, several per order. Joining them multiplies each order row by however many line items it has, so summing a per-order total after that join double- (or N-times-) counts it. The fix is to either aggregate the line items down to one row per order *before* joining, or sum the right column at the right grain after."
+**Q2: "My revenue total doubled after I joined orders to order lines. Why?"**
+Model answer: "The join changed the grain from one row per order to one row per order line, so each order's total is repeated once per line. I'd either sum the line amounts instead, or aggregate the lines to one row per order before joining."
 
-**Q3: "When would you use `INNER JOIN` instead of `LEFT JOIN`?"**
-Model answer: "When I specifically want to exclude rows with no match, when 'no order' isn't a case I want to see at all, just customers who've actually ordered something. `LEFT JOIN` is for when the unmatched case itself is part of the answer, like finding customers with zero orders."
+**Q3: "When would you use INNER JOIN instead of LEFT JOIN?"**
+Model answer: "When unmatched rows aren't part of the answer, like revenue by customer, where a customer with no orders contributes nothing. When the unmatched rows matter, like 'all customers and their order counts, including zero', it's a `LEFT JOIN`, and I check that nothing in `WHERE` removes them again."
+
+**Q4: "What's wrong with this query?" (a LEFT JOIN with `WHERE o.amount >= 60`)**
+Model answer: "The `WHERE` condition is on the right-hand table, so customers without a matching order have `NULL` there and get filtered out, making it an inner join. Moving the condition into `ON` keeps them."
 
 ## Extra practice
 
-- Take the notebook's grain example and run `SELECT COUNT(*)` both before and after the `GROUP BY` is added back, confirm out loud why the two numbers differ and which one actually answers "how many customers have orders."
-- Write the anti-join pattern from memory against a different pair of tables (for example, employees with no assigned department, if such a relationship exists in your schema) without looking at the example first.
+- Before and after a join, count the rows, and explain which table multiplied them.
+- On AdventureWorks, find how many products have never been sold (238), then list the first ten.
+- Explain, without code, why `SUM(DISTINCT credit_limit)` gives 600 on the lesson data.

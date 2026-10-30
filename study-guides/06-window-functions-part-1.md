@@ -1,72 +1,80 @@
-# Study Guide 05 — Window Functions, Part 1
+# Study Guide 06: Window Functions, Part 1
 
 Companion to [`06-window-functions-part-1.ipynb`](<../06-window-functions-part-1.ipynb>).
 
 | Tracks | Interview format |
-|---|---|
-| Data Engineer · Analytics Engineer (heavy) · Data Analyst | Technical screen, whiteboard |
+| --- | --- |
+| Analytics Engineer, Data Engineer, Data Analyst | Technical screen (live coding), take-home |
 
 ## Concept recap
 
-`GROUP BY` collapses rows into one summary row per group, you lose the detail rows. A window function (`... OVER (PARTITION BY ... ORDER BY ...)`) computes something across a group of rows *without* collapsing them, every original row stays, with the aggregate sitting alongside it as a new column.
+A **window function** calculates across a set of related rows and attaches the result to every row, instead of collapsing them the way `GROUP BY` does: five orders in, five rows out, each with its customer's total. `OVER (...)` defines the window: `PARTITION BY` decides which rows belong together, and `ORDER BY` decides their sequence.
 
-`ROW_NUMBER()` assigns a sequential number within each `PARTITION BY` group, the standard tool for "keep only the most recent row per group" (filter to `"Order Rank" = 1`). `LAG()`/`LEAD()` look at a neighboring row, previous or next, within the same partition, without a self-join. `SUM() OVER (PARTITION BY ... ORDER BY ...)` with no explicit frame produces a running total, because the default frame is "everything from the start of the partition up to the current row" (the frame clause itself is `06`'s subject).
+The three families: **ranking** (`ROW_NUMBER()`, and `RANK()` from `09`), **offset** (`LAG()` and `LEAD()`, which pull a value from the previous or next row), and **aggregate** (`SUM()` or `AVG()` with `OVER`).
 
-Window functions run after `WHERE`/`GROUP BY` but before `ORDER BY` in SQL Server's actual execution order, so a window function's alias can't be referenced in that same query's `WHERE` clause, wrap it in a CTE first and filter in the outer query.
+Window functions are calculated after `WHERE`, so they can only appear in the `SELECT` list and `ORDER BY`. To filter on one, compute it in an inner query and filter in the outer one. `WHERE` also decides which rows the window can see, so filtering before a `LAG()` can make the first remaining row's previous value `NULL`.
 
 ## Key syntax cheat sheet
 
 ```sql
--- Most recent row per group ("greatest-n-per-group")
-WITH numbered_orders AS (
-    SELECT CustomerID, SalesOrderID, OrderDate,
-           ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY OrderDate DESC) AS "Order Rank"
-    FROM Sales.SalesOrderHeader
-)
-SELECT CustomerID, SalesOrderID, OrderDate FROM numbered_orders WHERE "Order Rank" = 1;
+-- Group total on every row
+SELECT
+    order_id,
+    customer_id,
+    amount,
+    SUM(amount) OVER (PARTITION BY customer_id) AS customer_total
+FROM orders;
 
--- Compare to the previous row
-SELECT CustomerID, OrderDate, TotalDue,
-       LAG(TotalDue) OVER (PARTITION BY CustomerID ORDER BY OrderDate) AS "Previous Order Total"
-FROM Sales.SalesOrderHeader;
+-- Top one per group: rank inside, filter outside
+SELECT
+    customer_id,
+    order_id,
+    amount
+FROM (
+    SELECT
+        customer_id,
+        order_id,
+        amount,
+        ROW_NUMBER() OVER (
+            PARTITION BY customer_id
+            ORDER BY amount DESC
+        ) AS rn
+    FROM orders
+) AS ranked
+WHERE rn = 1;
 
--- Running total
-SELECT CustomerID, OrderDate, TotalDue,
-       SUM(TotalDue) OVER (PARTITION BY CustomerID ORDER BY OrderDate) AS "Running Total"
-FROM Sales.SalesOrderHeader;
+-- Change from the previous row
+SELECT
+    customer_id,
+    order_id,
+    amount - LAG(amount) OVER (PARTITION BY customer_id ORDER BY order_id) AS change_from_prev
+FROM orders;
 ```
 
-## Gotchas & common mistakes
+## Gotchas and common mistakes
 
-- Reaching for `GROUP BY` when the actual goal is "rank/compare rows but keep every row", that's a window function, `GROUP BY` throws the detail away.
-- Forgetting `PARTITION BY` and getting one ranking across the *entire* table instead of one ranking per group, `PARTITION BY` is what makes it reset per customer (or whatever the grouping is) rather than run globally.
-- Trying to filter directly on a window function's result in the same query's `WHERE` clause, it isn't visible there yet at that point in execution; wrap it in a CTE.
-- Expecting `LAG()` to return `0` instead of `NULL` for the first row in a partition, there is no previous row, so `NULL` is correct, not a bug.
+- Forgetting `PARTITION BY`, so `LAG()` reads across customers: Bola's first order shows Ada's last amount as "previous". No error, plausible result.
+- Filtering on a window alias in the same query's `WHERE`, which errors in SQLite and SQL Server alike.
+- Treating the `NULL` from `LAG()` on a partition's first row as 0. Arithmetic with it gives `NULL`; decide explicitly with `COALESCE` or `LAG(amount, 1, 0)`, which mean different things.
+- Ranking with `ROW_NUMBER()` when two rows can tie on the `ORDER BY`. Add a tie-breaker, or use `RANK()`.
+- Dividing by a windowed sum without `100.0` or `1.0`, which truncates every share to 0 on integer columns.
 
-## Interview questions & model answers
+## Interview questions and model answers
 
-**Q1 (one of the most common SQL interview questions at any level): "How would you get only the most recent order per customer?"**
-Model answer:
-```sql
-WITH numbered AS (
-    SELECT CustomerID, SalesOrderID, OrderDate,
-           ROW_NUMBER() OVER (PARTITION BY CustomerID ORDER BY OrderDate DESC) AS rn
-    FROM Sales.SalesOrderHeader
-)
-SELECT CustomerID, SalesOrderID, OrderDate FROM numbered WHERE rn = 1;
-```
-"`ROW_NUMBER()` restarts at 1 for every new `CustomerID` because of the `PARTITION BY`, and `ORDER BY OrderDate DESC` puts the newest order first within each customer, so `rn = 1` is always their latest order. This is the general 'greatest-n-per-group' pattern, it works the same way for 'top 3 per category' by changing the filter to `rn <= 3`."
+**Q1: "What's the difference between GROUP BY and a window function?"**
+Model answer: "`GROUP BY` collapses each group to one row. A window function computes over the group but keeps every row and attaches the result, so I can show each order next to its customer's total, or its share of it."
 
-**Q2: "What's the actual difference between `GROUP BY` and a window function?"**
-Model answer: "`GROUP BY` reduces N rows to one row per group, you lose row-level detail. A window function computes the same kind of aggregate but keeps every row, the aggregate just becomes an extra column alongside the original data. I use `GROUP BY` when I only need the summary; I use a window function when I need the summary *and* the detail together, like showing a running total next to each individual transaction."
+**Q2 (very common): "Return each customer's largest order."**
+Model answer: the ranked derived table above. "`ROW_NUMBER()` partitioned by customer and ordered by amount descending numbers each customer's orders, and the outer query keeps `rn = 1`. If two orders can tie and both should appear, I'd use `RANK()` instead, and if only one should, I'd add a tie-breaker to the `ORDER BY`."
 
-**Q3: "How would you compute a running total per customer in SQL?"**
-Model answer: `SUM(TotalDue) OVER (PARTITION BY CustomerID ORDER BY OrderDate)`, "no explicit frame needed here, the default frame for an ordered window is 'start of partition through the current row', which is exactly the definition of a running total."
+**Q3: "Why can't you put ROW_NUMBER() in a WHERE clause?"**
+Model answer: "Window functions are calculated after `WHERE` has chosen the rows, so the value doesn't exist when `WHERE` runs. I compute it in a CTE or derived table and filter one level up."
 
-**Q4: "Why would `WHERE row_num = 1` fail if `row_num` is a `ROW_NUMBER()` alias defined in the same `SELECT`?"**
-Model answer: "Execution order, window functions run after `WHERE` but before `ORDER BY`. At the point `WHERE` executes, that alias doesn't exist yet. The fix is to compute it in a CTE or subquery, then filter in the outer query where it's already resolved."
+**Q4: "Calculate month-over-month change in sales."**
+Model answer: "Aggregate sales by month in a CTE, then `sales - LAG(sales) OVER (ORDER BY month)`. No `PARTITION BY`, because the months form one sequence. If I only want to show one year, I compute `LAG` over all months first and filter afterwards, or the first month of the year loses its previous month."
 
 ## Extra practice
 
-- Modify the `LAG()` example to also include `LEAD()`, comparing each order to both its previous *and* next order in the same query.
-- Change the "most recent order per customer" pattern to "3 most recent orders per customer" and explain out loud exactly what changes in the `WHERE` clause.
+- Show each order's percentage of its customer's total, and check Bola's two orders add to 100.
+- On AdventureWorks, return each salesperson's single largest order (17 rows), and explain where the `WHERE SalesPersonID IS NOT NULL` must go and why.
+- Recreate the missing-`PARTITION BY` mistake on purpose, then explain the wrong value in Bola's first row out loud.

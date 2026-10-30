@@ -108,9 +108,29 @@ def _strip_comments(sql):
 
 def _write_message(statement, count):
     verb = _strip_comments(statement).split(None, 1)[0].upper()
+    rows = f"{count} row{'' if count == 1 else 's'}"
     if verb in WRITE_VERBS and count >= 0:
-        return f"{count} row{'' if count == 1 else 's'} {WRITE_VERBS[verb]}"
+        return f'{rows} {WRITE_VERBS[verb]}'
+    if verb == 'AFFECTED' and count >= 0:
+        return f'{rows} affected'
+    if verb == 'COPIED' and count >= 0:
+        return f'{rows} copied'
     return None
+
+
+def _tsql_write_label(batch):
+    """Pick the word for a T-SQL batch's row counts.
+
+    A batch can hold several statements but reports only bare counts, so name the verb
+    only when the batch has a single write statement, and fall back to 'affected'.
+    """
+    text = _strip_comments(batch)
+    writes = re.findall(r'(?im)^\s*(INSERT|UPDATE|DELETE)\b', text)
+    if len(writes) == 1:
+        return writes[0].upper()
+    if not writes and re.search(r'(?is)^\s*SELECT\b.*\bINTO\s+[#\w]', text):
+        return 'COPIED'
+    return 'AFFECTED'
 
 
 @magics_class
@@ -172,12 +192,13 @@ class SQLTutorialMagics(Magics):
 
     def _run(self, line, runner, error_type):
         expect_error = '--expect-error' in line.split()
+        self.note = ''
         try:
             runner()
         except SQLError:
             raise
         except error_type as exc:
-            message = _clean_error(exc)
+            message = _clean_error(exc) + self.note
             if expect_error:
                 print(f'Error (this cell is meant to fail): {message}', file=sys.stderr)
                 return
@@ -192,14 +213,30 @@ class SQLTutorialMagics(Magics):
 
     def _run_tsql(self, cell):
         cursor = self._server().cursor()
-        for batch in re.split(r'(?im)^\s*GO\s*$', cell):
-            if not _strip_comments(batch).strip():
-                continue
-            cursor.execute(batch)
-            while True:
-                self._report(cursor, batch)
-                if not cursor.nextset():
-                    break
+        try:
+            for batch in re.split(r'(?im)^\s*GO\s*$', cell):
+                if not _strip_comments(batch).strip():
+                    continue
+                cursor.execute(batch)
+                while True:
+                    self._report(cursor, _tsql_write_label(batch))
+                    if not cursor.nextset():
+                        break
+        except Exception:
+            self._rollback_open_transaction()
+            raise
+
+    def _rollback_open_transaction(self):
+        # A failed statement can leave a BEGIN TRANSACTION open, and every later cell would
+        # then run inside it. Roll it back so one error can't quietly swallow later work.
+        try:
+            cursor = self.server.cursor()
+            cursor.execute('SELECT @@TRANCOUNT')
+            if cursor.fetchone()[0]:
+                cursor.execute('ROLLBACK')
+                self.note = ' (The open transaction was rolled back, so none of its changes were kept.)'
+        except Exception:
+            pass
 
     def _report(self, cursor, statement):
         if cursor.description:

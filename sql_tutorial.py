@@ -259,7 +259,10 @@ def _clean_error(exc):
     text = re.sub(r'^\(?\'?\d{5}\'?,?\s*', '', text)
     text = re.sub(r'\[[^\]]*\]', '', text)
     text = re.sub(r'\s*\(\d+\)\s*\(SQL\w+\)', '', text)
-    return ' '.join(text.split()).strip(' "\'()')
+    # SQL Server adds a second message after many errors, and pads temporary table names.
+    text = re.split(r'[;.]?\s*The statement has been terminated', text)[0]
+    text = re.sub(r'(#\w+?)_{3,}\w*', r'\1', text)
+    return ' '.join(text.split()).strip(' "\'();')
 
 
 def _in_colab():

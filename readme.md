@@ -35,9 +35,14 @@ Open [`00-course-overview.ipynb`](<00-course-overview.ipynb>) for the full guide
 | 08a | [Changing Data, Part 1](<08a-changing-data-part-1.ipynb>) | `INSERT`, `UPDATE`, `DELETE`, and transactions |
 | 08b | [Changing Data, Part 2](<08b-changing-data-part-2.ipynb>) | `CREATE TABLE`, constraints, foreign keys, and `ALTER TABLE` |
 | 09 | [Thinking in Metrics](<09-thinking-in-metrics.ipynb>) | Turning a business question into a definition, then a query |
+| Capstone | [The Online Store](<capstone-online-store-analysis.ipynb>) | One open business question on AdventureWorks, from definitions to a written answer |
 | A | [Appendix A - SQL Server Reference](<appendix-a-sql-server-reference.ipynb>) | Exploring a database, data types, and a T-SQL vs SQLite cheat sheet |
 
 Worked answers to every exercise are in [`solutions/`](solutions/).
+
+## Going further
+
+[`RESOURCES.md`](RESOURCES.md) lists the best free courses, practice sites, books, and documentation for SQL, with datasets for a project of your own and the first step beyond SQL on each track.
 
 ## Study guides and interview prep
 

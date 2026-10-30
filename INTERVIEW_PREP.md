@@ -27,6 +27,8 @@ Interviews lean on `SELECT`, `WHERE`, and `ORDER BY` fluency, `GROUP BY` reporti
 | High | 05, 06 | [05](study-guides/05-subqueries-to-ctes.md), [06](study-guides/06-window-functions-part-1.md) |
 | Useful | 01, 07, 08a, 08b, Appendix A | [01](study-guides/01-what-is-a-database.md), [07](study-guides/07-window-functions-part-2.md), [08a](study-guides/08a-changing-data-part-1.md), [08b](study-guides/08b-changing-data-part-2.md), [A](study-guides/appendix-a-sql-server-reference.md) |
 
+The [capstone](<capstone-online-store-analysis.ipynb>) matters for every track, because "walk me through a project" comes up in nearly every interview loop, whatever the role; its [study guide](study-guides/capstone-online-store-analysis.md) has model answers.
+
 What to over-prepare: `WHERE` against `HAVING` (03), the "customers with no orders" anti-join (04), explaining a join-grain miscount out loud without being asked to code it (04), and turning a vague question like "who are our best customers?" into a definition before writing anything (09). The last two test judgment rather than syntax, which is why interviewers like them.
 
 ### Analytics Engineer
@@ -62,9 +64,9 @@ What to over-prepare: the `LAST_VALUE()` frame trap and running totals over tied
 
 ## Building a portfolio project from this material
 
-Passing an interview and having something to point to in one are different things. To turn this repo into a portfolio piece:
+Passing an interview and having something to point to in one are different things. The [capstone](<capstone-online-store-analysis.ipynb>) is a worked example of the second; to build your own:
 
-- **Chain the notebooks into one analysis.** Pick a real question against AdventureWorks (top customers by lifetime value, month-over-month sales, which product categories keep their repeat buyers) and answer it with the sequence this course teaches: joins to assemble the data (04), CTEs to name each step (05), window functions to rank or trend it (06, 07), and an aggregated summary (03), all starting from a written definition (09).
+- **Chain the notebooks into one analysis.** Pick a real question against AdventureWorks (top customers by lifetime value, which territories grew fastest, which products are bought together) and answer it with the sequence the capstone follows: a written definition (09), checks on the data (02, 03), joins to assemble it (04), CTEs to name each step (05), window functions to rank or trend it (06, 07), and an aggregated summary (03), ending in a short write-up with its caveats.
 - **Write down why, not just what.** Note in comments why each step uses a `LEFT JOIN` rather than an `INNER JOIN`, or a `ROWS` frame rather than the default. Being able to defend a choice is what a review conversation is built to surface.
 - **Show the safe-change habit.** Pair each `UPDATE` or `DELETE` with the `SELECT` you ran first, and run it inside a transaction. It's a small thing that signals real production experience.
 - **Say the interview answers out loud.** Every question in `study-guides/` is answerable in 30 to 90 seconds, spoken, which is the format a technical screen takes.

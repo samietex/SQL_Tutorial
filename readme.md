@@ -1,85 +1,52 @@
 # SQL Tutorial
 
-![](./SQL%20Tutorial%20Cover.png)
+![SQL Tutorial](graphics/sql-tutorial-cover.png)
 
-A hands-on companion to the *All About Data & More* SQL curriculum. This is for people new to databases, or who know a little SQL and want a solid grounding in SQL Server specifically. Work through the notebooks in order and by the end you'll be able to query, filter, aggregate, and eventually join and window-function your way through real data, plus manage database structure with DDL and DML statements.
+A hands-on companion to the *All About Data & More* SQL curriculum, from "what is a table?" to window functions, changing data, and turning business questions into metrics. Each notebook follows one newsletter lesson: it builds that lesson's small dataset so every result matches the article, works through the ideas with queries you run and change, shows the mistakes that return a wrong answer without an error, gives you exercises with worked solutions, and ends by running the same ideas on Microsoft's AdventureWorks database at real scale.
 
-## Getting Started
+No prior experience is needed: [`01 - What Is a Database`](<01-what-is-a-database.ipynb>) starts from zero.
 
-**Already comfortable with git, VS Code, and SQL Server?** Clone the repo, open it in VS Code with the mssql extension installed, restore AdventureWorks2022, and start with [`01 - SQL Basics`](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>). Everything below is for anyone who isn't, worth a read even if you're experienced, since it's specific to this repo, not a generic git tutorial. The full version of this lives in [`00 - Course Overview.ipynb`](<00 - Course Overview.ipynb>), read that first if you're new here.
+## Start here
 
-### What you're actually looking at
+Open [`00-course-overview.ipynb`](<00-course-overview.ipynb>) for the full guide. The short version:
 
-Every file ending in `.ipynb` is a Jupyter notebook: a document that mixes explanation with actual SQL code you can run one step at a time and see the real result underneath it. That's the whole point of this repo, you don't just read about `SELECT`, you run it yourself.
+- **Read on GitHub.** Every notebook is saved with its results, so you can read the whole course here without installing anything. GitHub can't run the cells, though, and changing a query to see what happens is where most of the learning is.
+- **Run in Google Colab, with nothing to install.** Click the **Open in Colab** button at the top of any notebook and run the first cell. The AdventureWorks section of each notebook has a one-step setup cell that installs SQL Server inside your Colab session.
+- **Run on your own computer.** Install Python 3.10 or later, then, in this folder:
 
-### Reading vs. running
+  ```
+  pip install -r requirements.txt
+  jupyter lab
+  ```
 
-Viewing this on github.com shows you a **preview**. GitHub can display a notebook's text and whatever results were already saved in it, but it can't execute anything, there's no database behind the page. To actually run a query, you need to open the notebook somewhere connected to a real SQL Server, on your own computer.
+  The lessons need nothing else. For the AdventureWorks sections, you also need SQL Server with AdventureWorks restored; the Course Overview covers Windows, macOS, and Linux.
 
-### 1. Get the code onto your computer
+## The course
 
-```
-git clone https://github.com/samietex/SQL_Tutorial.git
-```
-Never used git? Click the green **Code** button on this page, then **Download ZIP**, and unzip it somewhere on your computer.
+| # | Notebook | What it covers |
+| --- | --- | --- |
+| 01 | [What Is a Database](<01-what-is-a-database.ipynb>) | Tables, rows, columns, and why there is more than one table |
+| 02 | [SQL Basics](<02-sql-basics.ipynb>) | `SELECT`, `WHERE`, `ORDER BY`, and where `NULL` hides |
+| 03 | [Aggregation](<03-aggregation.ipynb>) | `GROUP BY`, `HAVING`, and how aggregates treat missing values |
+| 04 | [JOINs](<04-joins.ipynb>) | `INNER` and `LEFT JOIN`, grain, and joins that corrupt a total |
+| 05 | [Subqueries to CTEs](<05-subqueries-to-ctes.ipynb>) | Subqueries of every kind, and naming each step with `WITH` |
+| 06 | [Window Functions, Part 1](<06-window-functions-part-1.ipynb>) | `OVER`, `PARTITION BY`, `ROW_NUMBER()`, and `LAG()` |
+| 07 | [Window Functions, Part 2](<07-window-functions-part-2.ipynb>) | Frames, running totals, moving averages, and percentiles |
+| 08a | [Changing Data, Part 1](<08a-changing-data-part-1.ipynb>) | `INSERT`, `UPDATE`, `DELETE`, and transactions |
+| 08b | [Changing Data, Part 2](<08b-changing-data-part-2.ipynb>) | `CREATE TABLE`, constraints, foreign keys, and `ALTER TABLE` |
+| 09 | [Thinking in Metrics](<09-thinking-in-metrics.ipynb>) | Turning a business question into a definition, then a query |
+| A | [Appendix A - SQL Server Reference](<appendix-a-sql-server-reference.ipynb>) | Exploring a database, data types, and a T-SQL vs SQLite cheat sheet |
 
-### 2. Install SQL Server and load the practice data
+Worked answers to every exercise are in [`solutions/`](solutions/).
 
-- Install [SQL Server Express Edition](https://www.microsoft.com/en-us/sql-server/sql-server-downloads), it's free.
-- Install [SQL Server Management Studio (SSMS)](https://learn.microsoft.com/en-us/sql/ssms/download-sql-server-management-studio-ssms), the tool you'll use to load the sample database below.
-- Download and restore the **AdventureWorks2022** sample database, most of these notebooks query it, and it doesn't come with SQL Server automatically. Official instructions: [Install and configure AdventureWorks](https://learn.microsoft.com/en-us/sql/samples/adventureworks-install-configure). You want the OLTP `.bak` file, restored as `AdventureWorks2022`.
+## Study guides and interview prep
 
-### 3. Install a tool that can actually run the notebooks
+[`study-guides/`](study-guides/) has a companion file for each notebook, with a concept recap, the roles and interview formats it shows up in, common mistakes, and interview questions with model answers. [`INTERVIEW_PREP.md`](INTERVIEW_PREP.md) ties them together track by track.
 
-These notebooks use a SQL kernel, they need an app that can connect a `.ipynb` file to a real SQL Server and run its cells.
+## Questions and corrections
 
-- Install [Visual Studio Code](https://code.visualstudio.com/), it's free.
-- Inside VS Code, install the **SQL Server (mssql)** extension by Microsoft.
-- Open this repo's folder in VS Code, then open a notebook.
-- The first time you run a cell, VS Code asks you to pick a kernel, choose the SQL kernel and connect it to your local SQL Server instance.
-- Run a cell with `Shift+Enter`. A cell that queries data shows its result as a table right underneath it, a real result from your own database.
-
-Azure Data Studio works too, it has the same SQL Notebooks feature built in.
-
-## Course Agenda
-
-| # | Type | Module |
-|---|------|--------|
-| 1 | Newsletter Only | What is a Database, and Why SQL (conceptual, no notebook, see the newsletter) |
-| 2 | Hands-On | [01 - SQL Basics (SELECT, WHERE, ORDER BY)](<01 - SQL Basics (SELECT, WHERE, ORDER BY).ipynb>) |
-| 3 | Hands-On | [02 - Aggregation (GROUP BY, HAVING, COUNT/SUM/AVG)](<02 - Aggregation (GROUP BY, HAVING, COUNT-SUM-AVG).ipynb>) |
-| 4 | Hands-On | [03 - JOINs (INNER vs LEFT)](<03 - JOINs (INNER vs LEFT).ipynb>) |
-| 5 | Hands-On | [04 - Subqueries to CTEs](<04 - Subqueries to CTEs.ipynb>) |
-| 6 | Hands-On | [05 - Window Functions, Part 1](<05 - Window Functions, Part 1.ipynb>) |
-| 7 | Hands-On | [06 - Window Functions, Part 2](<06 - Window Functions, Part 2.ipynb>) |
-| 8a | Hands-On | [08a - Changing Data, Part 1 (INSERT, UPDATE, DELETE)](<08a - Changing Data, Part 1 - INSERT, UPDATE, DELETE.ipynb>) |
-| 8b | Reference | [08b - Changing Data, Part 2 (CREATE & ALTER TABLE)](<08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>) |
-| 9 | Newsletter Only | Thinking in Metrics (conceptual, no notebook, see the newsletter) |
-| App A | Reference | [Appendix A - SQL Overview & Getting Started](<Appendix A - SQL Overview & Getting Started.ipynb>) |
-
-Every notebook in the sequence is written and ready to run. See the full reasoning behind the sequence at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
-
-## Interview & Job-Readiness Guides
-
-Alongside the numbered lessons, [`study-guides/`](study-guides/) has one companion
-file per notebook: a concept recap, which track(s) (Data Analyst, Analytics
-Engineer, Data Engineer) and interview format (technical screen, take-home,
-whiteboard) it tends to show up in, common mistakes, real interview questions
-with model answers, and extra practice prompts beyond what's in the notebook
-itself. [`INTERVIEW_PREP.md`](INTERVIEW_PREP.md) ties it together with a
-track-by-track breakdown of what to prioritize and how to actually study the
-guides (short version: answer the questions yourself before reading the model
-answer, don't just read them passively).
-
-## Contributing
-
-Contributions are welcome. If you'd like to improve existing content or add new tutorials:
-
-1. Fork this repository.
-2. Create a new branch for your changes.
-3. Make your modifications (add or edit notebooks or Markdown files).
-4. Submit a pull request.
+Spotted an error, a broken link, or a result that doesn't match its lesson? Please [open an issue](https://github.com/samietex/SQL_Tutorial/issues). The reading version of this curriculum, and the roadmap it belongs to, is at [All About Data & More](https://aaboutdata.substack.com/p/start-here-from-beginner-to-job-ready).
 
 ## License
 
-This project is licensed under the MIT License, see the LICENSE file for details.
+MIT, see [LICENSE](LICENSE). Written and maintained by Samuel Shaibu as part of *All About Data & More*.

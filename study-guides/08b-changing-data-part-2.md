@@ -1,62 +1,75 @@
-# Study Guide 08b — Changing Data, Part 2 (CREATE & ALTER TABLE)
+# Study Guide 08b: Changing Data, Part 2 (CREATE TABLE, constraints, ALTER TABLE)
 
-Companion to [`08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb`](<../08b - Changing Data, Part 2 - CREATE & ALTER TABLE.ipynb>).
+Companion to [`08b-changing-data-part-2.ipynb`](<../08b-changing-data-part-2.ipynb>).
 
 | Tracks | Interview format |
-|---|---|
-| Data Engineer (heavy, schema design) · Analytics Engineer | Technical screen, whiteboard, take-home |
+| --- | --- |
+| Data Engineer, Analytics Engineer | Technical screen, whiteboard (schema design), take-home |
 
 ## Concept recap
 
-`ALTER TABLE` changes an existing table's structure: `ADD column`, `DROP COLUMN`, `ALTER COLUMN` to change a type, and adding or dropping named constraints, `PRIMARY KEY`, `FOREIGN KEY`, `CHECK`, `UNIQUE`, `DEFAULT`. A `PRIMARY KEY` enforces both uniqueness and non-nullability for a column, and a column generally needs `NOT NULL` set before it can become one. A `FOREIGN KEY` constraint ties a column's values back to a valid value in another table's column, enforcing referential integrity, break it and the database itself rejects rows that don't have a matching parent. `CHECK` enforces a condition on every row (`CHECK (Age > 18)`), `UNIQUE` enforces no duplicates without requiring the column be the primary key, `DEFAULT` supplies a fallback value when `INSERT` doesn't specify one.
+`CREATE TABLE` defines each column as a name, a type, and optional rules, and the database enforces those rules on every write. The constraints you'll use most:
 
-Changing a column's data type is flagged explicitly as risky, it can cause data loss or fail outright if the existing data doesn't fit the new type.
+| Constraint | Rule |
+| --- | --- |
+| `NOT NULL` | The column must have a value |
+| `PRIMARY KEY` | Unique and not null; identifies the row |
+| `UNIQUE` | No two rows share a value (`NULL`s are treated differently by different engines) |
+| `CHECK (condition)` | Rejects rows where the condition is false |
+| `DEFAULT value` | Filled in when an `INSERT` leaves the column out |
+| `REFERENCES parent (key)` | A foreign key: the value must exist in the parent table |
 
-The syntax for several of these operations genuinely differs by engine, this is one of the few places in the whole repo where "SQL Server does its own thing" instead of everything being portable ANSI SQL:
+Engines differ in ways that matter. SQLite enforces foreign keys only after `PRAGMA foreign_keys = ON;`, set per connection and ignored inside an open transaction; SQL Server always enforces them. SQLite stores a value's type per value unless the table is `STRICT`, so it accepts a credit limit of `'Efe'`; SQL Server's columns have fixed types. SQLite and PostgreSQL allow many `NULL`s in a `UNIQUE` column, while SQL Server allows one.
 
-| Operation | SQL Server | MySQL | PostgreSQL |
-|---|---|---|---|
-| Change a column's type | `ALTER COLUMN col TYPE` | `MODIFY COLUMN col TYPE` | `ALTER COLUMN col TYPE ...` |
-| Set a default | `ADD CONSTRAINT ... DEFAULT 'x' FOR col` | inline or `ALTER col SET DEFAULT 'x'` | `ALTER COLUMN col SET DEFAULT 'x'` |
-| Switch active database | `USE db` | `USE db` | not supported, connect directly |
+`ALTER TABLE` changes a table that has rows. A new `NOT NULL` column needs a `DEFAULT` for the existing rows. SQLite can add, drop, and rename columns but must rebuild a table to change a type or add a constraint; SQL Server has `ALTER COLUMN` and `ADD CONSTRAINT`, and checks a new constraint against every existing row.
 
 ## Key syntax cheat sheet
 
 ```sql
-ALTER TABLE Employees ADD Gender VARCHAR(255);
-ALTER TABLE Employees DROP COLUMN Gender;
-ALTER TABLE Employees ALTER COLUMN Employee_ID INT NOT NULL;
+CREATE TABLE payments (
+    payment_id INTEGER PRIMARY KEY,
+    order_id INTEGER NOT NULL REFERENCES orders (order_id),
+    amount INTEGER NOT NULL CHECK (amount > 0),
+    method TEXT NOT NULL DEFAULT 'card' CHECK (method IN ('card', 'cash', 'transfer')),
+    reference TEXT UNIQUE
+);
 
-ALTER TABLE Employees ADD CONSTRAINT PK_ID PRIMARY KEY (Employee_ID);
-ALTER TABLE Employees ADD CONSTRAINT FK_Department_ID
-    FOREIGN KEY (Department_ID) REFERENCES Departments(Department_ID);
-ALTER TABLE Employees ADD CONSTRAINT CK_Age CHECK (Age > 18);
-ALTER TABLE Employees ADD CONSTRAINT UQ_Employee_Name UNIQUE (Employee_Name);
-ALTER TABLE Departments ADD CONSTRAINT DF_Department_Name DEFAULT 'Finance' FOR Department_Name;
+ALTER TABLE customers
+ADD COLUMN signup_year INTEGER NOT NULL DEFAULT 2026;
+
+-- SQL Server only
+ALTER TABLE customers
+ALTER COLUMN credit_limit DECIMAL(10, 2) NOT NULL;
+
+ALTER TABLE customers
+ADD CONSTRAINT credit_limit_positive CHECK (credit_limit > 0);
 ```
 
-## Gotchas & common mistakes
+## Gotchas and common mistakes
 
-- Trying to make a column a `PRIMARY KEY` while it still allows `NULL`, it needs `NOT NULL` first, exactly the two-step sequence the notebook walks through on `Department_ID`.
-- Changing a column's type in place on a table with existing data that doesn't fit the new type, without checking first, this is a production incident waiting to happen, not just a syntax exercise.
-- Assuming `ALTER COLUMN` syntax is portable, it's SQL Server's specific keyword; MySQL and PostgreSQL both phrase the same operation differently.
-- Dropping a `FOREIGN KEY` and not recreating it, silently losing referential integrity between two tables that are supposed to stay in sync.
+- Declaring a foreign key in SQLite and forgetting the pragma, so it isn't enforced.
+- `INSERT INTO t VALUES (...)` without a column list: adding a column later breaks it loudly, and a swapped value order can be accepted quietly.
+- Adding a `NOT NULL` column with no `DEFAULT` to a table with rows.
+- Assuming `UNIQUE` means "always present"; it needs `NOT NULL` too.
+- Adding a constraint that existing rows violate, which SQL Server refuses.
+- Never testing a rule. A typo in a `CHECK` can make it accept everything; test each rule with a row that should fail.
 
-## Interview questions & model answers
+## Interview questions and model answers
 
-**Q1: "Walk me through adding a foreign key relationship between two existing tables that don't currently have one."**
-Model answer: "First, the column has to exist, `ALTER TABLE Employees ADD Department_ID INT`, if it doesn't already. Then I add the constraint itself: `ALTER TABLE Employees ADD CONSTRAINT FK_Department_ID FOREIGN KEY (Department_ID) REFERENCES Departments(Department_ID)`. From that point, SQL Server enforces that every `Department_ID` value in `Employees` has to exist in `Departments`, inserts or updates that violate it get rejected."
+**Q1: "What's the difference between a primary key and a unique constraint?"**
+Model answer: "Both forbid duplicates. A primary key also forbids `NULL`, identifies the row, and there's one per table; a table can have several unique constraints, and depending on the engine they allow one or many `NULL`s."
 
-**Q2: "What's the difference between a `PRIMARY KEY` and a `UNIQUE` constraint?"**
-Model answer: "Both enforce no duplicate values, but a `PRIMARY KEY` also disallows `NULL` and a table can only have one, it's the canonical identity of each row. A `UNIQUE` constraint allows `NULL` (in most engines, one or more `NULL`s are allowed since `NULL` isn't considered equal to itself), and a table can have several `UNIQUE` constraints on different columns."
+**Q2: "How would you add a NOT NULL column to a table that already has millions of rows?"**
+Model answer: "Give it a `DEFAULT` so the existing rows get a value, or add it as nullable, backfill it in batches, and then add the `NOT NULL` constraint. On a big table I'd check how the engine applies the change, since some rewrite the whole table and lock it, and test on a copy first."
 
-**Q3: "You need to change a column's type in a production table. What do you check before running the `ALTER`?"**
-Model answer: "Whether the existing data actually fits the new type without truncation or conversion errors, on a large table this can also lock it for the duration, so I'd check size and consider running it in a maintenance window or testing it against a copy first. The notebook's own caution is right: altering a type can cause data loss if the new type can't accommodate what's already there, so I verify before I run it, not after."
+**Q3: "What does a foreign key protect you from?"**
+Model answer: "Orphans: child rows pointing at parents that don't exist, either from inserting a bad reference or deleting a parent that still has children. Without one, reports that join to the parent silently drop rows that reports without the join still count."
 
-**Q4: "Is `ALTER TABLE ... ALTER COLUMN` something you can copy-paste into a MySQL or Postgres script unchanged?"**
-Model answer: "No. MySQL uses `MODIFY COLUMN` for the same operation, PostgreSQL keeps `ALTER COLUMN` but a different clause structure (`ALTER COLUMN col TYPE ...`). It's one of the few genuinely engine-specific corners of otherwise-portable SQL, worth double-checking docs before assuming it just works elsewhere."
+**Q4: "Why name the columns in an INSERT?"**
+Model answer: "So the statement says which value goes where. Without the list, values must fill every column in table order, so adding a column breaks the insert, and swapping two values can put a name in a number column on an engine that doesn't enforce types."
 
 ## Extra practice
 
-- Design a two-table schema (like `Employees`/`Departments`) from scratch: write the `CREATE TABLE` statements, then add a primary key, foreign key, check, unique, and default constraint entirely with `ALTER TABLE` afterward, don't put them inline at creation, to practice the "modify an existing table" scenario a take-home is more likely to actually ask for.
-- Look up how your foreign-key error would read differently in Postgres vs. SQL Server if you tried to insert a row violating referential integrity, interviewers sometimes ask what an error actually looks like, not just what causes it.
+- Design a `products` table with a required unique name, a positive price, and a stock flag defaulting to 1, then write one failing insert per rule.
+- Predict which of four inserts into `payments` succeed, as in the notebook's exercise 2, before running them.
+- On AdventureWorks, find which table the most foreign keys point at (`Production.Product`, with 14), and explain what that means for deleting a product.
